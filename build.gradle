@@ -42,6 +42,7 @@ publishing {
 	}
 }
 
+// Linter
 spotless {
 	java {
 		googleJavaFormat()
