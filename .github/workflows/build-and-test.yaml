@@ -25,4 +25,4 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x minniekenny # skip minniekenny -- run it separately in minnie-kenny.yaml
       - name: Test
-        run: ./gradlew test
+        run: ./gradlew test -x minniekenny # skip minniekenny -- run it separately in minnie-kenny.yaml
