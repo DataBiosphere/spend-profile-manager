@@ -49,10 +49,7 @@ spotless {
 }
 
 task minniekenny(type: Exec) {
-	commandLine 'pwd'
-//	workingDir '.'
-//	commandLine 'sh minnie-kenny.sh'
-
+	commandLine 'sh', './minnie-kenny.sh'
 }
 
 test.dependsOn minniekenny
