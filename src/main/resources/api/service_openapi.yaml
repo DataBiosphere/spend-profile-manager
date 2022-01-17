@@ -1,0 +1,87 @@
+openapi: 3.0.1
+info:
+  title: Terra Spend Profile Manager
+  description: |
+    Manages spend profiles
+  version: 0.1.0
+
+servers:
+  - url: /
+
+security:
+  - bearerAuth: []
+  - authorization: [openid, email, profile]
+
+paths:
+  /status:
+    get:
+      security: []
+      description: |
+        Returns the operational status of the service
+      operationId: serviceStatus
+      tags:
+        - Unauthenticated
+      responses:
+        200:
+          description: Service is functional
+          $ref: '#/components/responses/StatusResponse'
+        500:
+          description: Service is broken
+          $ref: '#/components/responses/StatusResponse'
+
+components:
+  schemas:
+    ErrorReport:
+      type: object
+      properties:
+        message:
+          type: string
+        statusCode:
+          type: integer
+        causes:
+          type: array
+          items:
+            type: string
+    SystemStatus:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          description: status of this service
+        systems:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              ok:
+                type: boolean
+              messages:
+                type: array
+                items:
+                  type: string
+  responses:
+    ErrorResponse:
+      description: common error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorReport'
+    StatusResponse:
+      description: common status response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SystemStatus'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+    authorization:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://accounts.google.com/o/oauth2/auth
+          scopes:
+            openid: open id authorization
+            email: email authorization
+            profile: profile authorization

@@ -5,23 +5,106 @@ buildscript {
 }
 
 plugins {
-	id 'java-library'
+	id 'java'
 	id 'idea'
 	id 'maven-publish'
-	id 'com.diffplug.gradle.spotless' version '3.27.2'
+	id 'com.diffplug.spotless' version '5.0.0'
+	id 'org.springframework.boot' version '2.4.6'
+	id "org.hidetake.swagger.generator" version "2.19.1"
 }
 
-group = 'bio.terra'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+allprojects {
+	group 'bio.terra'
+	version '0.1.0-SNAPSHOT'
+	sourceCompatibility = 11
+
+	ext {
+		openApiOutputDir = "${buildDir}/generated"
+		resourceDir = "${rootDir}/src/main/resources"
+	}
+
+	// specifying versions for dependencies, not adding the dependencies themselves (yet)
+	apply plugin: "io.spring.dependency-management"
+	dependencyManagement {
+		imports {
+			mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+		}
+		dependencies {
+			dependency group: "io.swagger.core.v3", name: "swagger-annotations", version: "2.1.12"
+			dependency group: "io.swagger.codegen.v3", name: "swagger-codegen-cli", version: "3.0.31"
+		}
+	}
+
+	apply plugin: "idea"
+	idea {
+		module {
+			generatedSourceDirs = [file("${openApiOutputDir}/src/main/java")]
+			downloadJavadoc = true
+		}
+	}
+}
 
 repositories {
 	mavenCentral()
+	maven {
+		url 'https://broadinstitute.jfrog.io/broadinstitute/libs-release-local/'
+	}
+	maven {
+		url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
+	}
 }
 
 dependencies {
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+	// Terra deps - we get Stairway via TCL
+	implementation group: 'bio.terra', name: 'terra-common-lib', version: '0.0.52-SNAPSHOT'
+
+	// Versioned direct deps
+	implementation group: 'org.liquibase', name: 'liquibase-core', version: '4.7.0'
+	implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+
+	// OpenAPI (swagger) deps
+	implementation group: "io.springfox", name: "springfox-swagger-ui", version: "2.10.0"
+	implementation group: "io.springfox", name: "springfox-swagger2", version: "2.9.2"
+	implementation group: "io.swagger.core.v3", name: "swagger-annotations"
+	swaggerCodegen group: "io.swagger.codegen.v3", name: "swagger-codegen-cli"
+	runtimeOnly group: "org.webjars.npm", name: "swagger-ui-dist", version: "3.35.2"
+
+	// Test deps
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+dependencyLocking {
+	lockAllConfigurations() // see https://docs.gradle.org/current/userguide/dependency_locking.html
+}
+
+swaggerSources {
+	server {
+		inputFile = file("${resourceDir}/api/service_openapi.yaml")
+		code {
+			language = "spring"
+			library = "spring-boot"
+			outputDir = file("${openApiOutputDir}")
+			components = ["models", "apis"]
+			rawOptions = [
+					"--invoker-package", "bio.terra",
+					"--api-package", "bio.terra.controller",
+					"--model-package", "bio.terra.model",
+					"-D", "interfaceOnly=true," +
+							"useTags=true," +
+							"dateLibrary=java8"
+			]
+		}
+	}
+}
+
+// for scans
+if (hasProperty('buildScan')) {
+	buildScan {
+		termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+		termsOfServiceAgree = 'yes'
+	}
 }
 
 java {
@@ -29,9 +112,22 @@ java {
 }
 
 test {
+	useJUnitPlatform()
+}
+
+task unitTest(type: Test) {
 	useJUnitPlatform {
 		includeTags 'unit'
 	}
+}
+
+task integrationTest(type: Test) {
+	useJUnitPlatform {
+		includeTags "integration"
+	}
+	// Force tests to always be re-run, since integration tests involve communicating with external
+	// resources.
+	outputs.upToDateWhen { false }
 }
 
 publishing {
@@ -54,3 +150,5 @@ task minniekenny(type: Exec) {
 }
 
 test.dependsOn minniekenny
+compileJava.dependsOn swaggerSources.server.code, spotlessApply
+sourceSets.main.java.srcDir "${openApiOutputDir}/src/main/java"
