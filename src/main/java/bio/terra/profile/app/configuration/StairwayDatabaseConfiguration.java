@@ -1,4 +1,4 @@
-package bio.terra.spendprofilemanager.app.configuration;
+package bio.terra.profile.app.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

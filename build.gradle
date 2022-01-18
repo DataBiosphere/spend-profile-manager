@@ -101,6 +101,7 @@ swaggerSources {
 					"--invoker-package", "bio.terra",
 					"--api-package", "bio.terra.controller",
 					"--model-package", "bio.terra.model",
+					"--model-name-prefix", "Api",
 					"-D", "interfaceOnly=true," +
 							"useTags=true," +
 							"dateLibrary=java8"
@@ -115,6 +116,20 @@ if (hasProperty('buildScan')) {
 		termsOfServiceUrl = 'https://gradle.com/terms-of-service'
 		termsOfServiceAgree = 'yes'
 	}
+}
+
+// Generate/clean the version properties file
+// This was being done by a plugin: https://github.com/palantir/gradle-git-version
+// but it does not work with Gradle 7.0. It was also very complicated for a
+// what we need, so easily replaced with a bash script
+def generatedVersionFile = "${resourceDir}/generated/version.properties"
+
+task generateVersionProperties(type: Exec) {
+	commandLine "${projectDir}/writeVersionProperties.sh", "${version}", "${generatedVersionFile}"
+}
+
+task cleanVersionProperties(type: Exec) {
+	commandLine "rm", "-f", "${generatedVersionFile}"
 }
 
 java {
@@ -160,5 +175,6 @@ task minniekenny(type: Exec) {
 }
 
 test.dependsOn minniekenny
-compileJava.dependsOn swaggerSources.server.code, spotlessApply
+compileJava.dependsOn swaggerSources.server.code, spotlessApply, generateVersionProperties
+clean.dependsOn cleanVersionProperties
 sourceSets.main.java.srcDir "${openApiOutputDir}/src/main/java"

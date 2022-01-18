@@ -16,7 +16,7 @@ paths:
   /status:
     get:
       security: []
-      description: |
+      description: >
         Returns the operational status of the service
       operationId: serviceStatus
       tags:
@@ -28,6 +28,21 @@ paths:
         500:
           description: Service is broken
           $ref: '#/components/responses/StatusResponse'
+  /version:
+    get:
+      security: []
+      description: >
+        Returns the deployed version of the service
+      operationId: serviceVersion
+      tags:
+        - Unauthenticated
+      responses:
+        200:
+          description: System version response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemVersion'
 
 components:
   schemas:
@@ -59,6 +74,22 @@ components:
                 type: array
                 items:
                   type: string
+    SystemVersion:
+      type: object
+      required: [ gitTag, gitHash, github, build ]
+      properties:
+        gitTag:
+          type: string
+          description: Git tag of currently deployed app.
+        gitHash:
+          type: string
+          description: Git hash of currently deployed app.
+        github:
+          type: string
+          description: Github link to currently deployed commit.
+        build:
+          type: string
+          description: Version of the currently deployed app declared in build.gradle. Client and server versions are linked.
   responses:
     ErrorResponse:
       description: common error response

@@ -1,4 +1,4 @@
-package bio.terra.spendprofilemanager.app.configuration;
+package bio.terra.profile.app.configuration;
 
 import static com.google.common.base.Predicates.or;
 import static springfox.documentation.builders.PathSelectors.regex;
@@ -20,7 +20,7 @@ public class SwaggerDocumentationConfig {
     return new Docket(DocumentationType.SWAGGER_2)
         .select()
         .apis(RequestHandlerSelectors.basePackage("bio.terra"))
-        .paths(or(regex("/api.*"), regex("/status")))
+        .paths(or(regex("/api.*"), regex("/status"), regex("/version")))
         .build()
         .apiInfo(apiInfo());
   }

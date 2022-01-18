@@ -1,4 +1,4 @@
-package bio.terra.spendprofilemanager.app;
+package bio.terra.profile.app;
 
 import bio.terra.common.logging.LoggingInitializer;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,7 +23,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
       // Metrics exporting components & configs
       "bio.terra.common.prometheus",
       // Scan all service-specific packages beneath the current package
-      "bio.terra.spendprofilemanager"
+      "bio.terra.profile"
     })
 public class Main {
   public static void main(String[] args) {

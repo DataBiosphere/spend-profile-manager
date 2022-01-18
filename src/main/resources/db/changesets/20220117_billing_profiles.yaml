@@ -22,7 +22,7 @@ databaseChangeLog:
                     Display name to be used for the profile.
               - column:
                   name: description
-                  type: text
+                  type: ${description_type}
                   remarks: |
                     Free text that describes the profile.
               - column:
@@ -41,8 +41,8 @@ databaseChangeLog:
                   type: varchar(32)
                   constraints:
                     nullable: true
-                remarks: |
-                  Either "direct" or the reseller of the sub-account that sends the bill.
+                  remarks: |
+                    Either "direct" or the reseller of the sub-account that sends the bill.
               - column:
                   name: cloud_platform
                   type: ${identifier_type}
