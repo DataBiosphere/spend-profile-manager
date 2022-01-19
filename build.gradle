@@ -175,6 +175,7 @@ task minniekenny(type: Exec) {
 }
 
 test.dependsOn minniekenny
+spotlessJava.dependsOn swaggerSources.server.code
 compileJava.dependsOn swaggerSources.server.code, spotlessApply, generateVersionProperties
 clean.dependsOn cleanVersionProperties
 sourceSets.main.java.srcDir "${openApiOutputDir}/src/main/java"

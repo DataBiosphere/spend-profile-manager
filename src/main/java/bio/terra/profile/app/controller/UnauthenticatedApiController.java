@@ -4,7 +4,7 @@ import bio.terra.controller.UnauthenticatedApi;
 import bio.terra.model.ApiSystemStatus;
 import bio.terra.model.ApiSystemVersion;
 import bio.terra.profile.app.configuration.VersionConfiguration;
-import bio.terra.profile.app.service.status.ProfileStatusService;
+import bio.terra.profile.service.status.ProfileStatusService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,7 +35,7 @@ public class UnauthenticatedApiController implements UnauthenticatedApi {
 
   @Override
   public ResponseEntity<ApiSystemStatus> serviceStatus() {
-    ApiSystemStatus systemStatus = statusService.getStatus();
+    ApiSystemStatus systemStatus = statusService.getCurrentStatus();
     HttpStatus httpStatus = systemStatus.isOk() ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
     return new ResponseEntity<>(systemStatus, httpStatus);
   }
