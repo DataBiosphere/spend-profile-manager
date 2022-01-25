@@ -55,7 +55,7 @@ profile:
   job:
     max-threads: 4
     polling-interval-seconds: 1
-    resource-id: mc-terra-workspace-manager
+    resource-id: mc-terra-spend-profile-manager
     timeout-seconds: 1800
 
   sam.base-path: ${env.urls.sam}
@@ -82,7 +82,7 @@ terra.common:
   kubernetes:
     in-kubernetes: false
   stairway:
-    cluster-name-suffix: workspace-stairway
+    cluster-name-suffix: profile-stairway
     force-clean-start: false # ${env.db.init}
     max-parallel-flights: 50
     migrate-upgrade: true

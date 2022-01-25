@@ -2,9 +2,9 @@ package bio.terra.profile.service.status;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import bio.terra.model.ApiSystemStatus;
-import bio.terra.model.ApiSystemStatusSystems;
 import bio.terra.profile.common.BaseUnitTest;
+import bio.terra.profile.generated.model.ApiSystemStatus;
+import bio.terra.profile.generated.model.ApiSystemStatusSystems;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

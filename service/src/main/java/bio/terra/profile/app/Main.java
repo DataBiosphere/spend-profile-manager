@@ -5,28 +5,35 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
-@EnableSwagger2
+@SpringBootApplication(
+        exclude = {
+                // We don't make use of DataSource in this application, so exclude it from scanning.
+                DataSourceAutoConfiguration.class,
+        })
 @ComponentScan(
-    basePackages = {
-      "bio.terra.common.db",
-      "bio.terra.common.kubernetes",
-      "bio.terra.common.stairway",
-      // Logging components & configs
-      "bio.terra.common.logging",
-      // Liquibase migration components & configs
-      "bio.terra.common.migrate",
-      // Tracing-related components & configs
-      "bio.terra.common.tracing",
-      // Metrics exporting components & configs
-      "bio.terra.common.prometheus",
-      // Scan all service-specific packages beneath the current package
-      "bio.terra.profile"
-    })
+        basePackages = {
+                // Dependencies for Stairway
+                "bio.terra.common.kubernetes",
+                // Scan for logging-related components & configs
+                "bio.terra.common.logging",
+                // Scan for Liquibase migration components & configs
+                "bio.terra.common.migrate",
+                // Transaction management and DB retry configuration
+                "bio.terra.common.retry.transaction",
+                // Stairway initialization and status
+                "bio.terra.common.stairway",
+                // Scan for tracing-related components & configs
+                "bio.terra.common.tracing",
+                // Scan all service-specific packages beneath the current package
+                "bio.terra.profile"
+        })
+@EnableRetry
+@EnableTransactionManagement
 public class Main {
-  public static void main(String[] args) {
-    new SpringApplicationBuilder(Main.class).initializers(new LoggingInitializer()).run(args);
-  }
+    public static void main(String[] args) {
+        new SpringApplicationBuilder(Main.class).initializers(new LoggingInitializer()).run(args);
+    }
 }

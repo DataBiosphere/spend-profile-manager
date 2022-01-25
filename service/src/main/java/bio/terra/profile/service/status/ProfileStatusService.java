@@ -1,8 +1,9 @@
 package bio.terra.profile.service.status;
 
-import bio.terra.model.ApiSystemStatusSystems;
 import bio.terra.profile.app.configuration.StatusCheckConfiguration;
 import java.sql.Connection;
+
+import bio.terra.profile.generated.model.ApiSystemStatusSystems;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

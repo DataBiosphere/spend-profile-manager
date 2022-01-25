@@ -1,18 +1,16 @@
 package bio.terra.profile.app.controller;
 
-import bio.terra.controller.UnauthenticatedApi;
-import bio.terra.model.ApiSystemStatus;
-import bio.terra.model.ApiSystemVersion;
 import bio.terra.profile.app.configuration.VersionConfiguration;
 import bio.terra.profile.service.status.ProfileStatusService;
-import io.swagger.annotations.Api;
+import bio.terra.profile.generated.controller.UnauthenticatedApi;
+import bio.terra.profile.generated.model.ApiSystemStatus;
+import bio.terra.profile.generated.model.ApiSystemVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 @Controller
-@Api(tags = {"Unauthenticated"})
 public class UnauthenticatedApiController implements UnauthenticatedApi {
 
   private final ProfileStatusService statusService;

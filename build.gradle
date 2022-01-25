@@ -1,8 +1,6 @@
 plugins {
     id 'maven-publish'
-    id "java"
     id 'com.jfrog.artifactory' version '4.18.2'
-    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
 
     // For JShell support
     // https://gitlab.com/barfuin/gradle-taskinfo
@@ -13,50 +11,6 @@ plugins {
 def artifactory_repo_key = System.getenv("ARTIFACTORY_REPO_KEY") != null ? System.getenv("ARTIFACTORY_REPO_KEY") : 'libs-snapshot-local'
 def artifactory_username = System.getenv('ARTIFACTORY_USERNAME')
 def artifactory_password = System.getenv('ARTIFACTORY_PASSWORD')
-
-// If true, search local repository (~/.m2/repository/) first for dependencies.
-def useMavenLocal = false
-
-allprojects {
-    group 'bio.terra'
-    version '0.1.0-SNAPSHOT'
-    // TODO bump to 17
-    sourceCompatibility = 11
-
-    ext {
-        openApiOutputDir = "${buildDir}/generated"
-        resourceDir = "${rootDir}/service/src/main/resources"
-    }
-
-    // specifying versions for dependencies, not adding the dependencies themselves (yet)
-    apply plugin: "io.spring.dependency-management"
-    dependencyManagement {
-        dependencies {
-            dependency group: "io.swagger.core.v3", name: "swagger-annotations", version: "2.1.12"
-            dependency group: "io.swagger.codegen.v3", name: "swagger-codegen-cli", version: "3.0.31"
-        }
-    }
-
-    apply plugin: "idea"
-    idea {
-        module {
-            downloadJavadoc = true
-        }
-    }
-
-    repositories {
-        if (useMavenLocal) {
-            mavenLocal() // must be listed first to take effect
-        }
-        mavenCentral()
-        maven {
-            url 'https://broadinstitute.jfrog.io/broadinstitute/libs-release/'
-        }
-        maven {
-            url 'https://broadinstitute.jfrog.io/broadinstitute/libs-snapshot-local/'
-        }
-    }
-}
 
 gradle.taskGraph.whenReady { taskGraph ->
     if (taskGraph.hasTask(artifactoryPublish) &&

@@ -2,11 +2,12 @@ package bio.terra.profile.service.status;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import bio.terra.model.ApiSystemStatus;
-import bio.terra.model.ApiSystemStatusSystems;
 import bio.terra.profile.app.configuration.StatusCheckConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
 import java.util.concurrent.TimeUnit;
+
+import bio.terra.profile.generated.model.ApiSystemStatus;
+import bio.terra.profile.generated.model.ApiSystemStatusSystems;
 import org.junit.jupiter.api.Test;
 
 public class BaseStatusServiceTest extends BaseUnitTest {

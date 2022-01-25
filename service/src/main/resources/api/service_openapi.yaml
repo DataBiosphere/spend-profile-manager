@@ -1,12 +1,9 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: Terra Spend Profile Manager
   description: |
     Manages spend profiles
   version: 0.1.0
-
-servers:
-  - url: /
 
 security:
   - bearerAuth: []
