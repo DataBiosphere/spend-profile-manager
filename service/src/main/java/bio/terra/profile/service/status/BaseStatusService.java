@@ -54,7 +54,6 @@ public class BaseStatusService {
 
   public void checkStatus() {
     if (configuration.isEnabled()) {
-      logger.info("XXX CHECKING STATUS");
       var newStatus = new ApiSystemStatus();
       try {
         var systems =

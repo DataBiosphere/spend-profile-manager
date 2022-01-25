@@ -1,0 +1,120 @@
+plugins {
+	id "idea"
+	id "java"
+	id 'com.diffplug.spotless' version '5.0.0'
+	// TODO upgrade spring-boot?
+	id 'org.springframework.boot' version '2.4.6'
+	id "org.hidetake.swagger.generator" version "2.19.1"
+}
+
+dependencies {
+	// Terra deps - we get Stairway via TCL
+	implementation group: 'bio.terra', name: 'terra-common-lib', version: '0.0.52-SNAPSHOT'
+
+	// Versioned direct deps
+	implementation group: "org.postgresql", name: "postgresql", version: "42.3.1"
+	implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+	implementation group: "org.liquibase", name: "liquibase-core", version: "4.7.0"
+
+	// Deps whose versions are controlled by Spring
+	implementation group: "org.apache.commons", name: "commons-dbcp2"
+	implementation group: "org.apache.commons", name: "commons-lang3"
+	implementation group: "org.apache.commons", name: "commons-pool2"
+	implementation group: "org.springframework.boot", name: "spring-boot-starter-data-jdbc"
+
+	// OpenAPI (swagger) deps
+	// TODO upgrade?
+	implementation group: "io.springfox", name: "springfox-swagger-ui", version: "2.10.0"
+	implementation group: "io.springfox", name: "springfox-swagger2", version: "2.9.2"
+	implementation group: "io.swagger.core.v3", name: "swagger-annotations"
+	swaggerCodegen group: "io.swagger.codegen.v3", name: "swagger-codegen-cli"
+	runtimeOnly group: "org.webjars.npm", name: "swagger-ui-dist", version: "3.35.2"
+
+	// Test deps
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+dependencyLocking {
+	lockAllConfigurations() // see https://docs.gradle.org/current/userguide/dependency_locking.html
+}
+
+swaggerSources {
+	server {
+		inputFile = file("${resourceDir}/api/service_openapi.yaml")
+		code {
+			language = "spring"
+			library = "spring-boot"
+			outputDir = file("${openApiOutputDir}")
+			components = ["models", "apis"]
+			rawOptions = [
+					"--invoker-package", "bio.terra",
+					"--api-package", "bio.terra.controller",
+					"--model-package", "bio.terra.model",
+					"--model-name-prefix", "Api",
+					"-D", "interfaceOnly=true," +
+							"useTags=true," +
+							"dateLibrary=java8"
+			]
+		}
+	}
+}
+
+// for scans
+if (hasProperty('buildScan')) {
+	buildScan {
+		termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+		termsOfServiceAgree = 'yes'
+	}
+}
+
+// Generate/clean the version properties file
+// This was being done by a plugin: https://github.com/palantir/gradle-git-version
+// but it does not work with Gradle 7.0. It was also very complicated for a
+// what we need, so easily replaced with a bash script
+def generatedVersionFile = "${resourceDir}/generated/version.properties"
+
+task generateVersionProperties(type: Exec) {
+	commandLine "${projectDir}/writeVersionProperties.sh", "${version}", "${generatedVersionFile}"
+}
+
+task cleanVersionProperties(type: Exec) {
+	commandLine "rm", "-f", "${generatedVersionFile}"
+}
+
+java {
+	withJavadocJar()
+}
+
+test {
+	useJUnitPlatform()
+}
+
+task unitTest(type: Test) {
+	useJUnitPlatform {
+		includeTags 'unit'
+	}
+}
+
+task integrationTest(type: Test) {
+	useJUnitPlatform {
+		includeTags "integration"
+	}
+	// Force tests to always be re-run, since integration tests involve communicating with external
+	// resources.
+	outputs.upToDateWhen { false }
+}
+
+// Linter
+spotless {
+	java {
+		googleJavaFormat()
+	}
+}
+
+test.dependsOn rootProject.minniekenny
+spotlessJava.dependsOn swaggerSources.server.code
+compileJava.dependsOn swaggerSources.server.code, spotlessApply, generateVersionProperties
+clean.dependsOn cleanVersionProperties
+sourceSets.main.java.srcDir "${openApiOutputDir}/src/main/java"
