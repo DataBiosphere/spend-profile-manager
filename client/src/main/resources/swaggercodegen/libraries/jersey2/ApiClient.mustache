@@ -1,6 +1,6 @@
 {{!--
-  Copied from the https://github.com/swagger-api/swagger-codegen-generators tagged release 1.0.24:
-  https://github.com/swagger-api/swagger-codegen-generators/blob/v1.0.24/src/main/resources/handlebars/Java/libraries/jersey2/ApiClient.mustache
+  Copied from the https://github.com/swagger-api/swagger-codegen-generators tagged release 1.0.31:
+  https://github.com/swagger-api/swagger-codegen-generators/blob/v1.0.31/src/main/resources/handlebars/Java/libraries/jersey2/ApiClient.mustache
 
   This file may include Terra-specific modifications to the Swagger-codegen generated API client
   code. This file (ApiClient.mustache) is responsible for generating the generic ApiClient class,
@@ -42,6 +42,7 @@ import java.io.InputStream;
 
 {{^supportJava6}}
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 {{/supportJava6}}
 {{#supportJava6}}
@@ -665,9 +666,9 @@ public class ApiClient {
     }
 
     if (tempFolderPath == null)
-      return File.createTempFile(prefix, suffix);
+      return Files.createTempFile(prefix, suffix).toFile();
     else
-      return File.createTempFile(prefix, suffix, new File(tempFolderPath));
+      return Files.createTempFile(Paths.get(tempFolderPath), prefix, suffix).toFile();
   }
 
   /**
@@ -690,13 +691,6 @@ public class ApiClient {
   public <T> T invokeAPI(String path, String method, List<Pair> queryParams, Object body, Map<String, String> headerParams, Map<String, Object> formParams, String accept, String contentType, String[] authNames, GenericType<T> returnType) throws ApiException {
     updateParamsForAuth(authNames, queryParams, headerParams);
 
-    {{! Begin Terra change }}
-    if (body == null && "POST".equals(method)) {
-      // Jersey2 workaround: replace a null body with an empty string to force Jersey2 to
-      // include a Content-Length header in the POST request. See PF-356 for details.
-      body = "";
-    }
-    {{! End Terra change }}
     // Not using `.target(this.basePath).path(path)` below,
     // to support (constant) query string in `path`, e.g. "/posts?draft=1"
     WebTarget target = httpClient.target(this.basePath + path);

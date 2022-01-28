@@ -13,7 +13,7 @@ paths:
   /status:
     get:
       security: []
-      summary: Returns the operational status of the service
+      summary: Returns the operational status of the service.
       operationId: serviceStatus
       tags:
         - Unauthenticated
@@ -28,7 +28,7 @@ paths:
   /version:
     get:
       security: []
-      summary: Returns the deployed version of the service
+      summary: Returns the deployed version of the service.
       operationId: serviceVersion
       tags:
         - Unauthenticated
@@ -51,10 +51,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateProfileRequestBody'
+              $ref: '#/components/schemas/CreateProfileRequest'
       responses:
         '200':
-          $ref: '#/components/responses/CreateProfileResponse'
+          $ref: '#/components/responses/CreateProfileResultResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -62,7 +62,7 @@ paths:
         '500':
           $ref: '#/components/responses/NotFound'
     get:
-      summary: Returns all billing profiles a user can read
+      summary: Returns all billing profiles a user can read.
       operationId: listProfiles
       tags:
         - Profile
@@ -75,7 +75,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileDescriptionList'
+                $ref: '#/components/schemas/ProfileModelList'
+
+  /api/profiles/v1/result/{jobId}:
+    parameters:
+      - $ref: '#/components/parameters/JobId'
+    get:
+      summary: Get the result of a async job to create a billing profile.
+      operationId: getCreateProfileResult
+      tags:
+        - Profile
+      responses:
+        '200':
+          $ref: '#/components/responses/CreateProfileResultResponse'
+        '202':
+          $ref: '#/components/responses/CreateProfileResultResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /api/profiles/v1/{profileId}:
     parameters:
@@ -91,7 +115,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileDescription'
+                $ref: '#/components/schemas/ProfileModel'
         '403':
           $ref: '#/components/responses/PermissionDenied'
         '404':
@@ -108,14 +132,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateProfileRequestBody'
+              $ref: '#/components/schemas/UpdateProfileRequest'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileDescription'
+                $ref: '#/components/schemas/ProfileModel'
         '403':
           $ref: '#/components/responses/PermissionDenied'
         '404':
@@ -179,7 +203,7 @@ components:
         default: 10
 
   schemas:
-    CreateProfileRequestBody:
+    CreateProfileRequest:
       type: object
       required:
         - id
@@ -220,7 +244,7 @@ components:
           type: string
           description: Name of the Azure application deployment
 
-    UpdateProfileRequestBody:
+    UpdateProfileRequest:
       type: object
       required:
         - id
@@ -236,7 +260,7 @@ components:
           type: string
           description: Free text that describes the profile
 
-    ProfileDescriptionList:
+    ProfileModelList:
       type: object
       required:
         - total
@@ -248,11 +272,11 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/ProfileDescription'
+            $ref: '#/components/schemas/ProfileModel'
       description: >
         The total number of billing profiles available and a page of profiles
 
-    ProfileDescription:
+    ProfileModel:
       type: object
       required:
         - id
@@ -301,14 +325,14 @@ components:
       type: object
       description: |
         The result of a call to create a billing profile. Contains
-        a JobReport detailing the async operation and either a ProfileDescription
+        a JobReport detailing the async operation and either a ProfileModel
         or an ErrorReport detailing an error.
       required: [ jobReport ]
       properties:
         jobReport:
           $ref: '#/components/schemas/JobReport'
-        gcpContext:
-          $ref: '#/components/schemas/ProfileDescription'
+        profileDescription:
+          $ref: '#/components/schemas/ProfileModel'
         errorReport:
           $ref: '#/components/schemas/ErrorReport'
 
@@ -397,7 +421,7 @@ components:
       enum: [ 'AZURE', 'GCP' ]
 
   responses:
-    CreateProfileResponse:
+    CreateProfileResultResponse:
       description: Job is complete (succeeded or failed)
       content:
         application/json:

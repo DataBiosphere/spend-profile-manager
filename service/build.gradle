@@ -1,19 +1,19 @@
 buildscript {
 	ext {
-		springBootVersion = '2.4.6'
+		springBootVersion = '2.6.3'
 	}
 }
 
 plugins {
 	id 'spend-profile-manager.java-conventions'
 
-	id "com.github.ben-manes.versions" version "0.36.0"
-	id "com.google.cloud.tools.jib" version "3.0.0"
+	id "com.github.ben-manes.versions" version "0.38.0"
+	id "com.google.cloud.tools.jib" version "3.2.0"
 	id "de.undercouch.download" version "4.1.1"
-	id "org.hidetake.swagger.generator" version "2.18.2"
+	id "org.hidetake.swagger.generator" version "2.19.1"
 	id "org.springframework.boot" version "${springBootVersion}"
-	id "io.spring.dependency-management" version "1.0.10.RELEASE"
-	id 'ru.vyarus.quality' version '4.5.0'
+	id "io.spring.dependency-management" version "1.0.11.RELEASE"
+	id 'ru.vyarus.quality' version '4.7.0'
 }
 
 def artifactGroup = "${group}.profile"
@@ -28,9 +28,17 @@ idea {
 }
 
 dependencies {
+	// Google dependencies
+	implementation platform('com.google.cloud:libraries-bom:20.9.0')
+
 	// Terra deps - we get Stairway via TCL
-	implementation group: "bio.terra", name: "terra-common-lib", version: "0.0.52-SNAPSHOT"
+	implementation group: "bio.terra", name: "terra-common-lib", version: "0.0.53-SNAPSHOT"
 	implementation group: "org.broadinstitute.dsde.workbench", name: "sam-client_2.12", version: "0.1-61135c7"
+
+	// Cloud Resource Library
+	implementation platform('bio.terra.cloud-resource-lib:platform:0.6.0')
+	implementation group: 'bio.terra.cloud-resource-lib', name: 'google-billing'
+	implementation group: 'bio.terra.cloud-resource-lib', name: 'azure-resourcemanager-common'
 
 	// Versioned direct deps
 	implementation group: "org.postgresql", name: "postgresql", version: "42.3.1"
@@ -52,7 +60,7 @@ dependencies {
 	// OpenAPI (swagger) deps
 	implementation gradle.librarySwaggerAnnotations
 	swaggerCodegen gradle.librarySwaggerCli
-	runtimeOnly group: "org.webjars.npm", name: "swagger-ui-dist", version: "3.37.2"
+	runtimeOnly group: "org.webjars.npm", name: "swagger-ui-dist", version: "4.3.0"
 
 	// Test deps
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
@@ -96,6 +104,9 @@ swaggerSources {
 		inputFile = file(gradle.openapiSourceFile)
 		code {
 			language = "spring"
+			// For Swagger Codegen v3 on Java 16+
+			// See https://github.com/swagger-api/swagger-codegen/issues/10966
+			jvmArgs = ['--add-opens=java.base/java.util=ALL-UNNAMED']
 			library = "spring-boot"
 			outputDir = file(openapiOutputDir)
 			components = ["models", "apis"]

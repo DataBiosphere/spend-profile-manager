@@ -44,8 +44,7 @@ jacocoTestReport {
 
 version = gradle.spmVersion
 group = 'bio.terra'
-// TODO bump to 17
-sourceCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_17
 
 // Spotless configuration
 spotless {
