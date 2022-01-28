@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +50,29 @@ public class ProfileApiController implements ProfileApi {
             result, getAsyncResponseCode(result.getJobReport()));
   }
 
-//  @Override
+  @Override
+  public ResponseEntity<ApiCreateProfileResult> getCreateProfileResult(@PathVariable("jobId") String jobId) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    final ApiCreateProfileResult response = fetchCreateProfileResult(jobId, user);
+    return new ResponseEntity<>(
+            response, getAsyncResponseCode(response.getJobReport()));
+  }
+
+  @Override
+  public ResponseEntity<ApiProfileModel> getProfile(@PathVariable("profileId") UUID profileId) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    ApiProfileModel profile = profileService.getProfile(profileId, user);
+    return new ResponseEntity<>(profile, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<Void> deleteProfile(@PathVariable("profileId") UUID id) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    profileService.deleteProfile(id, user);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  //  @Override
 //  public ResponseEntity<JobModel> updateProfile(
 //      @Valid @RequestBody BillingProfileUpdateModel billingProfileRequest) {
 //    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
@@ -57,12 +80,7 @@ public class ProfileApiController implements ProfileApi {
 //    return jobToResponse(jobService.retrieveJob(jobId, user));
 //  }
 //
-  @Override
-  public ResponseEntity<Void> deleteProfile(UUID id) {
-    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    profileService.deleteProfile(id, user);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-  }
+
 
 //  @Override
 //  public ResponseEntity<EnumerateBillingProfileModel> enumerateProfiles(

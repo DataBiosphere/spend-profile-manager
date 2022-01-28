@@ -3,9 +3,10 @@ package bio.terra.profile.service.profile;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.generated.model.ApiCreateProfileRequest;
-import bio.terra.profile.service.job.JobBuilder;
+import bio.terra.profile.generated.model.ApiProfileModel;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
+import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
@@ -133,21 +134,21 @@ public class ProfileService {
 //    return profileDao.enumerateBillingProfiles(offset, limit, resources);
 //  }
 //
-//  /**
-//   * Lookup a billing profile by the profile id with auth check. Supports the REST API
-//   *
-//   * @param id the unique idea of this billing profile
-//   * @param user authenticated user
-//   * @return On success, the billing profile model
-//   * @throws ProfileNotFoundException when the profile is not found
-//   * @throws IamUnauthorizedException when the caller does not have access to the billing profile
-//   */
-//  public BillingProfileModel getProfileById(UUID id, AuthenticatedUserRequest user) {
+  /**
+   * Lookup a billing profile by the profile id with auth check. Supports the REST API
+   *
+   * @param id the unique idea of this billing profile
+   * @param user authenticated user
+   * @return On success, the billing profile model
+   * @throws ProfileNotFoundException when the profile is not found
+   * @throws IamUnauthorizedException when the caller does not have access to the billing profile
+   */
+  public ApiProfileModel getProfile(UUID id, AuthenticatedUserRequest user) {
 //    if (!iamService.hasActions(user, IamResourceType.SPEND_PROFILE, id.toString())) {
 //      throw new IamUnauthorizedException("unauthorized");
 //    }
-//    return getProfileByIdNoCheck(id);
-//  }
+    return profileDao.getBillingProfileById(id);
+  }
 //
 //  /**
 //   * Lookup a billing profile by the profile id with no auth check. Used for internal references.
