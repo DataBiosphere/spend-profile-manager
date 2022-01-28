@@ -42,3 +42,5 @@ out/
 .openapi-generator/
 pom.xml
 
+### write-config script output
+config/

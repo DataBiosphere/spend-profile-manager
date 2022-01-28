@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         basePackages = {
                 // Dependencies for Stairway
                 "bio.terra.common.kubernetes",
+                // For authenticating user tokens
+                "bio.terra.common.iam",
                 // Scan for logging-related components & configs
                 "bio.terra.common.logging",
                 // Scan for Liquibase migration components & configs

@@ -9,7 +9,6 @@ import bio.terra.profile.generated.model.ApiJobReport;
 import bio.terra.profile.generated.model.ApiProfileModel;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.ProfileService;
-import com.azure.resourcemanager.resources.models.ApiProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
 
 @Controller
 public class ProfileApiController implements ProfileApi {
@@ -57,13 +57,13 @@ public class ProfileApiController implements ProfileApi {
 //    return jobToResponse(jobService.retrieveJob(jobId, user));
 //  }
 //
-//  @Override
-//  public ResponseEntity<JobModel> deleteProfile(UUID id) {
-//    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-//    String jobId = profileService.deleteProfile(id, user);
-//    return jobToResponse(jobService.retrieveJob(jobId, user));
-//  }
-//
+  @Override
+  public ResponseEntity<Void> deleteProfile(UUID id) {
+    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+    profileService.deleteProfile(id, user);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
 //  @Override
 //  public ResponseEntity<EnumerateBillingProfileModel> enumerateProfiles(
 //      @Valid @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,

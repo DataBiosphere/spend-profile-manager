@@ -3,12 +3,18 @@ package bio.terra.profile.service.profile;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
 import bio.terra.profile.generated.model.ApiCreateProfileRequest;
+import bio.terra.profile.service.job.JobBuilder;
+import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
-import bio.terra.profile.service.profile.flight.create.ProfileCreateFlight;
+import bio.terra.profile.service.profile.flight.ProfileMapKeys;
+import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
+import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 public class ProfileService {
@@ -50,7 +56,7 @@ public class ProfileService {
     String description =
         String.format("Create billing profile '%s'", billingProfileRequest.getDisplayName());
     return jobService
-            .newJob().description(description).flightClass(ProfileCreateFlight.class).request(billingProfileRequest).userRequest(user)
+            .newJob().description(description).flightClass(CreateProfileFlight.class).request(billingProfileRequest).userRequest(user)
             .submit();
   }
 
@@ -83,41 +89,32 @@ public class ProfileService {
 //        .submit();
 //  }
 //
-//  /**
-//   * Remove billing profile. We make the following checks:
-//   *
-//   * <ul>
-//   *   <li>the caller must be an owner of the billing profile
-//   *   <li>There must be no dependencies on the billing profile; that is, no snapshots, dataset, or
-//   *       buckets referencing the profile
-//   * </ul>
-//   *
-//   * @param id the unique id of the bill profile
-//   * @param user the user attempting the delete
-//   * @return jobId of the submitted stairway job
-//   */
-//  public String deleteProfile(UUID id, AuthenticatedUserRequest user) {
+  /**
+   * Remove billing profile. We make the following checks:
+   *
+   * <ul>
+   *   <li>the caller must be an owner of the billing profile
+   *   <li>There must be no dependencies on the billing profile; that is, no snapshots, dataset, or
+   *       buckets referencing the profile
+   * </ul>
+   *
+   * @param id the unique id of the bill profile
+   * @param user the user attempting the delete
+   * @return jobId of the submitted stairway job
+   */
+  public void deleteProfile(UUID id, AuthenticatedUserRequest user) {
 //    iamService.verifyAuthorization(
 //        user, IamResourceType.SPEND_PROFILE, id.toString(), IamAction.DELETE);
-//    CloudPlatform platform;
-//    try {
-//      BillingProfileModel billingProfile = profileDao.getBillingProfileById(id);
-//      platform = billingProfile.getCloudPlatform();
-//    } catch (ProfileNotFoundException e) {
-//      // Use default cloud profile if the billing profile does not exist and let the flight handle
-//      // the object
-//      // not being found
-//      platform = CloudPlatformWrapper.DEFAULT;
-//    }
-//
-//    String description = String.format("Delete billing profile id '%s'", id);
-//    return jobService
-//        .newJob(description, ProfileDeleteFlight.class, null, user)
-//        .addParameter(ProfileMapKeys.PROFILE_ID, id)
-//        .addParameter(JobMapKeys.CLOUD_PLATFORM.getKeyName(), platform.name())
-//        .submit();
-//  }
-//
+    var billingProfile = profileDao.getBillingProfileById(id);
+    var platform = billingProfile.getCloudPlatform();
+    var description = String.format("Delete billing profile id '%s'", id);
+    var deleteJob = jobService
+        .newJob().description(description).flightClass(DeleteProfileFlight.class).userRequest(user)
+        .addParameter(ProfileMapKeys.PROFILE_ID, id)
+        .addParameter(JobMapKeys.CLOUD_PLATFORM.getKeyName(), platform.name());
+    deleteJob.submitAndWait(null);
+  }
+
 //  /**
 //   * Enumerate the profiles that are visible to the requesting user
 //   *

@@ -9,9 +9,9 @@ import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
 import org.springframework.context.ApplicationContext;
 
-public class ProfileCreateFlight extends Flight {
+public class CreateProfileFlight extends Flight {
 
-  public ProfileCreateFlight(FlightMap inputParameters, Object applicationContext) {
+  public CreateProfileFlight(FlightMap inputParameters, Object applicationContext) {
     super(inputParameters, applicationContext);
 
     ApplicationContext appContext = (ApplicationContext) applicationContext;
