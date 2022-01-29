@@ -10,9 +10,8 @@ import bio.terra.profile.service.job.exception.InvalidJobParameterException;
 import bio.terra.stairway.Flight;
 import bio.terra.stairway.FlightMap;
 import io.opencensus.contrib.spring.aop.Traced;
-import org.apache.commons.lang3.StringUtils;
-
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 public class JobBuilder {
   private final JobService jobService;

@@ -4,10 +4,9 @@ import bio.terra.profile.db.ProfileDao;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.UUID;
 
 public class DeleteProfileStep implements Step {
   private static final Logger logger = LoggerFactory.getLogger(DeleteProfileStep.class);

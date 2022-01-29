@@ -4,10 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import bio.terra.profile.app.configuration.StatusCheckConfiguration;
 import bio.terra.profile.common.BaseUnitTest;
-import java.util.concurrent.TimeUnit;
-
 import bio.terra.profile.generated.model.ApiSystemStatus;
 import bio.terra.profile.generated.model.ApiSystemStatusSystems;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 public class BaseStatusServiceTest extends BaseUnitTest {

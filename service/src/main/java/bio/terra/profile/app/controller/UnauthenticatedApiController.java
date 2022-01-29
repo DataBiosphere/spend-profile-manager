@@ -1,10 +1,10 @@
 package bio.terra.profile.app.controller;
 
 import bio.terra.profile.app.configuration.VersionConfiguration;
-import bio.terra.profile.service.status.ProfileStatusService;
 import bio.terra.profile.generated.controller.UnauthenticatedApi;
 import bio.terra.profile.generated.model.ApiSystemStatus;
 import bio.terra.profile.generated.model.ApiSystemVersion;
+import bio.terra.profile.service.status.ProfileStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

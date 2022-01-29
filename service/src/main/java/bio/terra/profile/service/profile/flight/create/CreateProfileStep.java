@@ -21,7 +21,7 @@ public class CreateProfileStep implements Step {
   private final AuthenticatedUserRequest user;
 
   public CreateProfileStep(
-          ProfileDao profileDao,
+      ProfileDao profileDao,
       ApiCreateProfileRequest profileRequest,
       AuthenticatedUserRequest user) {
     this.profileDao = profileDao;
@@ -31,7 +31,7 @@ public class CreateProfileStep implements Step {
 
   @Override
   public StepResult doStep(FlightContext flightContext)
-          throws RetryException, InterruptedException {
+      throws RetryException, InterruptedException {
     // TODO: handle step re-running?
     ApiProfileModel profile = profileDao.createBillingProfile(profileRequest, user.getEmail());
     logger.info("Profile created with id {}", profileRequest.getId());

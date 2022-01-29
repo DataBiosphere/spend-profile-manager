@@ -14,9 +14,7 @@ public class CreateProfileVerifyAccountStep implements Step {
   private final AuthenticatedUserRequest user;
 
   public CreateProfileVerifyAccountStep(
-          CrlService crlService,
-      ApiCreateProfileRequest request,
-      AuthenticatedUserRequest user) {
+      CrlService crlService, ApiCreateProfileRequest request, AuthenticatedUserRequest user) {
     this.crlService = crlService;
     this.request = request;
     this.user = user;
@@ -29,9 +27,9 @@ public class CreateProfileVerifyAccountStep implements Step {
     // TODO: add billingCow.canAccess(user, billingAccountId) to CRL
     if (false) {
       throw new InaccessibleBillingAccountException(
-              String.format("The user '%s' needs access to the billing account '%s' to perform the requested operation",
-                      user.getEmail(),
-                      request.getId()));
+          String.format(
+              "The user '%s' needs access to the billing account '%s' to perform the requested operation",
+              user.getEmail(), request.getId()));
     }
     return StepResult.getStepResultSuccess();
   }

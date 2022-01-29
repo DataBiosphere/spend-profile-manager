@@ -9,15 +9,14 @@ import bio.terra.profile.generated.model.ApiJobReport;
 import bio.terra.profile.generated.model.ApiProfileModel;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.ProfileService;
+import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.UUID;
 
 @Controller
 public class ProfileApiController implements ProfileApi {
@@ -44,18 +43,16 @@ public class ProfileApiController implements ProfileApi {
       @RequestBody ApiCreateProfileRequest body) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     String jobId = profileService.createProfile(body, user);
-    final ApiCreateProfileResult result =
-            fetchCreateProfileResult(jobId, user);
-    return new ResponseEntity<>(
-            result, getAsyncResponseCode(result.getJobReport()));
+    final ApiCreateProfileResult result = fetchCreateProfileResult(jobId, user);
+    return new ResponseEntity<>(result, getAsyncResponseCode(result.getJobReport()));
   }
 
   @Override
-  public ResponseEntity<ApiCreateProfileResult> getCreateProfileResult(@PathVariable("jobId") String jobId) {
+  public ResponseEntity<ApiCreateProfileResult> getCreateProfileResult(
+      @PathVariable("jobId") String jobId) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
     final ApiCreateProfileResult response = fetchCreateProfileResult(jobId, user);
-    return new ResponseEntity<>(
-            response, getAsyncResponseCode(response.getJobReport()));
+    return new ResponseEntity<>(response, getAsyncResponseCode(response.getJobReport()));
   }
 
   @Override
@@ -73,75 +70,78 @@ public class ProfileApiController implements ProfileApi {
   }
 
   //  @Override
-//  public ResponseEntity<JobModel> updateProfile(
-//      @Valid @RequestBody BillingProfileUpdateModel billingProfileRequest) {
-//    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-//    String jobId = profileService.updateProfile(billingProfileRequest, user);
-//    return jobToResponse(jobService.retrieveJob(jobId, user));
-//  }
-//
+  //  public ResponseEntity<JobModel> updateProfile(
+  //      @Valid @RequestBody BillingProfileUpdateModel billingProfileRequest) {
+  //    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+  //    String jobId = profileService.updateProfile(billingProfileRequest, user);
+  //    return jobToResponse(jobService.retrieveJob(jobId, user));
+  //  }
+  //
 
-
-//  @Override
-//  public ResponseEntity<EnumerateBillingProfileModel> enumerateProfiles(
-//      @Valid @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
-//      @Valid @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
-//    ControllerUtils.validateEnumerateParams(offset, limit);
-//    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-//    EnumerateBillingProfileModel ebpm = profileService.enumerateProfiles(offset, limit, user);
-//    return new ResponseEntity<>(ebpm, HttpStatus.OK);
-//  }
-//
-//  @Override
-//  public ResponseEntity<BillingProfileModel> retrieveProfile(UUID id) {
-//    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-//    BillingProfileModel profileModel = profileService.getProfileById(id, user);
-//    return new ResponseEntity<>(profileModel, HttpStatus.OK);
-//  }
-//
-//  @Override
-//  public ResponseEntity<PolicyResponse> addProfilePolicyMember(
-//      @PathVariable("id") UUID id,
-//      @PathVariable("policyName") String policyName,
-//      @Valid @RequestBody PolicyMemberRequest policyMember) {
-//    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-//    PolicyModel policy = profileService.addProfilePolicyMember(id, policyName, policyMember, user);
-//    PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
-//    return new ResponseEntity<>(response, HttpStatus.OK);
-//  }
-//
-//  @Override
-//  public ResponseEntity<PolicyResponse> deleteProfilePolicyMember(
-//      @PathVariable("id") UUID id,
-//      @PathVariable("policyName") String policyName,
-//      @PathVariable("memberEmail") String memberEmail) {
-//    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-//    PolicyModel policy =
-//        profileService.deleteProfilePolicyMember(id, policyName, memberEmail, user);
-//    PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
-//    return new ResponseEntity<>(response, HttpStatus.OK);
-//  }
-//
-//  @Override
-//  public ResponseEntity<PolicyResponse> retrieveProfilePolicies(@PathVariable("id") UUID id) {
-//    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-//    List<PolicyModel> policies = profileService.retrieveProfilePolicies(id, user);
-//    PolicyResponse response = new PolicyResponse().policies(policies);
-//    return new ResponseEntity<>(response, HttpStatus.OK);
-//  }
+  //  @Override
+  //  public ResponseEntity<EnumerateBillingProfileModel> enumerateProfiles(
+  //      @Valid @RequestParam(value = "offset", required = false, defaultValue = "0") Integer
+  // offset,
+  //      @Valid @RequestParam(value = "limit", required = false, defaultValue = "10") Integer
+  // limit) {
+  //    ControllerUtils.validateEnumerateParams(offset, limit);
+  //    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+  //    EnumerateBillingProfileModel ebpm = profileService.enumerateProfiles(offset, limit, user);
+  //    return new ResponseEntity<>(ebpm, HttpStatus.OK);
+  //  }
+  //
+  //  @Override
+  //  public ResponseEntity<BillingProfileModel> retrieveProfile(UUID id) {
+  //    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+  //    BillingProfileModel profileModel = profileService.getProfileById(id, user);
+  //    return new ResponseEntity<>(profileModel, HttpStatus.OK);
+  //  }
+  //
+  //  @Override
+  //  public ResponseEntity<PolicyResponse> addProfilePolicyMember(
+  //      @PathVariable("id") UUID id,
+  //      @PathVariable("policyName") String policyName,
+  //      @Valid @RequestBody PolicyMemberRequest policyMember) {
+  //    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+  //    PolicyModel policy = profileService.addProfilePolicyMember(id, policyName, policyMember,
+  // user);
+  //    PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
+  //    return new ResponseEntity<>(response, HttpStatus.OK);
+  //  }
+  //
+  //  @Override
+  //  public ResponseEntity<PolicyResponse> deleteProfilePolicyMember(
+  //      @PathVariable("id") UUID id,
+  //      @PathVariable("policyName") String policyName,
+  //      @PathVariable("memberEmail") String memberEmail) {
+  //    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+  //    PolicyModel policy =
+  //        profileService.deleteProfilePolicyMember(id, policyName, memberEmail, user);
+  //    PolicyResponse response = new PolicyResponse().policies(Collections.singletonList(policy));
+  //    return new ResponseEntity<>(response, HttpStatus.OK);
+  //  }
+  //
+  //  @Override
+  //  public ResponseEntity<PolicyResponse> retrieveProfilePolicies(@PathVariable("id") UUID id) {
+  //    AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
+  //    List<PolicyModel> policies = profileService.retrieveProfilePolicies(id, user);
+  //    PolicyResponse response = new PolicyResponse().policies(policies);
+  //    return new ResponseEntity<>(response, HttpStatus.OK);
+  //  }
 
   private ApiCreateProfileResult fetchCreateProfileResult(
-          String jobId, AuthenticatedUserRequest userRequest) {
+      String jobId, AuthenticatedUserRequest userRequest) {
     final JobService.AsyncJobResult<ApiProfileModel> jobResult =
-            jobService.retrieveAsyncJobResult(
-                    jobId, ApiProfileModel.class, userRequest);
+        jobService.retrieveAsyncJobResult(jobId, ApiProfileModel.class, userRequest);
     return new ApiCreateProfileResult()
-            .jobReport(jobResult.getJobReport())
-            .errorReport(jobResult.getApiErrorReport())
-            .profileDescription(jobResult.getResult());
+        .jobReport(jobResult.getJobReport())
+        .errorReport(jobResult.getApiErrorReport())
+        .profileDescription(jobResult.getResult());
   }
 
   private static HttpStatus getAsyncResponseCode(ApiJobReport jobReport) {
-    return jobReport.getStatus() == ApiJobReport.StatusEnum.RUNNING ? HttpStatus.ACCEPTED : HttpStatus.OK;
+    return jobReport.getStatus() == ApiJobReport.StatusEnum.RUNNING
+        ? HttpStatus.ACCEPTED
+        : HttpStatus.OK;
   }
 }

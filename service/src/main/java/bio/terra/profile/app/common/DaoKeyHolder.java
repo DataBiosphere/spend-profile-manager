@@ -1,12 +1,11 @@
 package bio.terra.profile.app.common;
 
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 public class DaoKeyHolder extends GeneratedKeyHolder {
 

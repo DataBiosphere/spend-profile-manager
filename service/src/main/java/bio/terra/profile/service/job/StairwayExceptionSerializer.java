@@ -6,13 +6,12 @@ import bio.terra.profile.service.job.exception.JobResponseException;
 import bio.terra.stairway.ExceptionSerializer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 
 public class StairwayExceptionSerializer implements ExceptionSerializer {
   private final ObjectMapper objectMapper;

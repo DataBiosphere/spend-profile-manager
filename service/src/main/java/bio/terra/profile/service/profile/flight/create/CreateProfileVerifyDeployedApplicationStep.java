@@ -14,9 +14,7 @@ public class CreateProfileVerifyDeployedApplicationStep implements Step {
   private final AuthenticatedUserRequest user;
 
   public CreateProfileVerifyDeployedApplicationStep(
-          CrlService crlService,
-      ApiCreateProfileRequest request,
-      AuthenticatedUserRequest user) {
+      CrlService crlService, ApiCreateProfileRequest request, AuthenticatedUserRequest user) {
     this.crlService = crlService;
     this.request = request;
     this.user = user;
@@ -27,11 +25,9 @@ public class CreateProfileVerifyDeployedApplicationStep implements Step {
     // TODO: implement Azure logic
     if (false) {
       throw new InaccessibleApplicationDeploymentException(
-              String.format(
-                      "The user '%s' needs access to teh deployed application '%s' to perform the requested operation",
-                      user.getEmail(),
-                      request.getApplicationDeploymentName()
-              ));
+          String.format(
+              "The user '%s' needs access to teh deployed application '%s' to perform the requested operation",
+              user.getEmail(), request.getApplicationDeploymentName()));
     }
     return StepResult.getStepResultSuccess();
   }

@@ -9,6 +9,12 @@ import bio.terra.profile.generated.model.ApiUpdateProfileRequest;
 import bio.terra.profile.service.profile.exception.CorruptMetadataException;
 import bio.terra.profile.service.profile.exception.ProfileInUseException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -19,13 +25,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class ProfileDao {
@@ -58,7 +57,7 @@ public class ProfileDao {
 
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
   public ApiProfileModel createBillingProfile(
-          ApiCreateProfileRequest profileRequest, String creator) {
+      ApiCreateProfileRequest profileRequest, String creator) {
     String sql =
         "INSERT INTO billing_profile"
             + " (id, name, biller, billing_account_id, description, cloud_platform, "
