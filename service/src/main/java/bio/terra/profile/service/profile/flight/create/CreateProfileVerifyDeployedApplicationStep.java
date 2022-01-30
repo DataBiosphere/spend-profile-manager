@@ -8,17 +8,9 @@ import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 
-public class CreateProfileVerifyDeployedApplicationStep implements Step {
-  private final CrlService crlService;
-  private final ApiCreateProfileRequest request;
-  private final AuthenticatedUserRequest user;
-
-  public CreateProfileVerifyDeployedApplicationStep(
-      CrlService crlService, ApiCreateProfileRequest request, AuthenticatedUserRequest user) {
-    this.crlService = crlService;
-    this.request = request;
-    this.user = user;
-  }
+record CreateProfileVerifyDeployedApplicationStep(
+    CrlService crlService, ApiCreateProfileRequest request, AuthenticatedUserRequest user)
+    implements Step {
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException {

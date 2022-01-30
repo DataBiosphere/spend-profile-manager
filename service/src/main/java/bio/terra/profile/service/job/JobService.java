@@ -76,7 +76,7 @@ public class JobService {
     this.jobConfig = jobConfig;
     this.ingressConfig = ingressConfig;
     this.stairwayDatabaseConfiguration = stairwayDatabaseConfiguration;
-    this.executor = Executors.newScheduledThreadPool(jobConfig.getMaxThreads());
+    this.executor = Executors.newScheduledThreadPool(jobConfig.maxThreads());
     this.mdcHook = mdcHook;
     this.stairwayComponent = stairwayComponent;
     this.context = context;
@@ -131,8 +131,8 @@ public class JobService {
 
   public void waitForJob(String jobId) {
     try {
-      int pollSeconds = jobConfig.getPollingIntervalSeconds();
-      int pollCycles = jobConfig.getTimeoutSeconds() / jobConfig.getPollingIntervalSeconds();
+      int pollSeconds = jobConfig.pollingIntervalSeconds();
+      int pollCycles = jobConfig.timeoutSeconds() / jobConfig.pollingIntervalSeconds();
       for (int i = 0; i < pollCycles; i++) {
         ScheduledFuture<FlightState> futureState =
             executor.schedule(
@@ -230,9 +230,8 @@ public class JobService {
     }
     // This is a little hacky, but GCP rejects non-https traffic and a local server does not support
     // it.
-    String protocol =
-        ingressConfig.getDomainName().startsWith("localhost") ? "http://" : "https://";
-    return protocol + Path.of(ingressConfig.getDomainName(), resultPath).toString();
+    String protocol = ingressConfig.domainName().startsWith("localhost") ? "http://" : "https://";
+    return protocol + Path.of(ingressConfig.domainName(), resultPath).toString();
   }
 
   private ApiJobReport.StatusEnum getJobStatus(FlightStatus flightStatus) {

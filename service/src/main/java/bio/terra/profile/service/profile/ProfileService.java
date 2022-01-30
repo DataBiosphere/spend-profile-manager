@@ -95,9 +95,7 @@ public class ProfileService {
    */
   public void deleteProfile(UUID id, AuthenticatedUserRequest user) {
     SamRethrow.onInterrupted(
-        () ->
-            samService.verifyAuthorization(
-                user, SamResourceType.PROFILE, id.toString(), SamAction.DELETE),
+        () -> samService.verifyAuthorization(user, SamResourceType.PROFILE, id, SamAction.DELETE),
         "verifyAuthorization");
     var billingProfile = profileDao.getBillingProfileById(id);
     var platform = billingProfile.getCloudPlatform();
@@ -142,8 +140,7 @@ public class ProfileService {
   public ApiProfileModel getProfile(UUID id, AuthenticatedUserRequest user) {
     var hasActions =
         SamRethrow.onInterrupted(
-            () -> samService.hasActions(user, SamResourceType.PROFILE, id.toString()),
-            "hasActions");
+            () -> samService.hasActions(user, SamResourceType.PROFILE, id), "hasActions");
     if (!hasActions) {
       throw new UnauthorizedException("unauthorized");
     }

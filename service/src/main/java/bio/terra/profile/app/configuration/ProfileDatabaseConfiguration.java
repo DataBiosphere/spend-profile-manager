@@ -1,7 +1,6 @@
 package bio.terra.profile.app.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.support.JdbcTransactionManager;
@@ -9,7 +8,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@EnableConfigurationProperties
 @EnableTransactionManagement
 @ConfigurationProperties(prefix = "profile.profile-database")
 public class ProfileDatabaseConfiguration extends BaseDatabaseConfiguration {

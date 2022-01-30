@@ -7,30 +7,49 @@ import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountExc
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
+import bio.terra.stairway.StepStatus;
+import com.google.cloud.billing.v1.BillingAccountName;
+import com.google.iam.v1.TestIamPermissionsRequest;
+import com.google.iam.v1.TestIamPermissionsResponse;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class CreateProfileVerifyAccountStep implements Step {
-  private final CrlService crlService;
-  private final ApiCreateProfileRequest request;
-  private final AuthenticatedUserRequest user;
-
-  public CreateProfileVerifyAccountStep(
-      CrlService crlService, ApiCreateProfileRequest request, AuthenticatedUserRequest user) {
-    this.crlService = crlService;
-    this.request = request;
-    this.user = user;
-  }
+record CreateProfileVerifyAccountStep(
+    CrlService crlService, ApiCreateProfileRequest request, AuthenticatedUserRequest user)
+    implements Step {
+  private static final Logger logger =
+      LoggerFactory.getLogger(CreateProfileVerifyAccountStep.class);
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException {
     var billingCow = crlService.getCloudBillingClientCow();
 
-    // TODO: add billingCow.canAccess(user, billingAccountId) to CRL
-    if (false) {
-      throw new InaccessibleBillingAccountException(
+    var permissionsToTest = List.of("billing.resourceAssociations.create");
+    var testPermissionsRequest =
+        TestIamPermissionsRequest.newBuilder()
+            .setResource(BillingAccountName.of(request.getBillingAccountId()).toString())
+            .addAllPermissions(permissionsToTest)
+            .build();
+
+    final TestIamPermissionsResponse testPermissionsResponse;
+    try {
+      testPermissionsResponse = billingCow.testIamPermissions(testPermissionsRequest);
+    } catch (Exception e) {
+      return new StepResult(StepStatus.STEP_RESULT_FAILURE_RETRY, e);
+    }
+
+    var actualPermissions = testPermissionsResponse.getPermissionsList();
+    if (actualPermissions == null || !actualPermissions.equals(permissionsToTest)) {
+      var message =
           String.format(
               "The user '%s' needs access to the billing account '%s' to perform the requested operation",
-              user.getEmail(), request.getId()));
+              user.getEmail(), request.getId());
+      logger.info(message);
+      return new StepResult(
+          StepStatus.STEP_RESULT_FAILURE_FATAL, new InaccessibleBillingAccountException(message));
     }
+
     return StepResult.getStepResultSuccess();
   }
 

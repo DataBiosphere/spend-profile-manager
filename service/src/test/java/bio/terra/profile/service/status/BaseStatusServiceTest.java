@@ -10,16 +10,9 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 public class BaseStatusServiceTest extends BaseUnitTest {
-
   private static final int STALENESS = 7;
-  private static final StatusCheckConfiguration configuration = new StatusCheckConfiguration();
-
-  static {
-    configuration.setEnabled(true);
-    configuration.setPollingIntervalSeconds(5);
-    configuration.setStartupWaitSeconds(1);
-    configuration.setStalenessThresholdSeconds(STALENESS);
-  }
+  private static final StatusCheckConfiguration configuration =
+      new StatusCheckConfiguration(true, 5, 1, STALENESS);
 
   @Test
   void testSingleComponent() {

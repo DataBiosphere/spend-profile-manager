@@ -7,6 +7,7 @@ import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.profile.app.configuration.SamConfiguration;
 import com.google.common.annotations.VisibleForTesting;
 import io.opencensus.contrib.spring.aop.Traced;
+import java.util.UUID;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
@@ -38,7 +39,7 @@ public class SamService {
   public void verifyAuthorization(
       AuthenticatedUserRequest userRequest,
       SamResourceType resourceType,
-      String resourceId,
+      UUID resourceId,
       SamAction action)
       throws InterruptedException {
     final boolean isAuthorized = isAuthorized(userRequest, resourceType, resourceId, action);
@@ -71,7 +72,7 @@ public class SamService {
   public boolean isAuthorized(
       AuthenticatedUserRequest userRequest,
       SamResourceType resourceType,
-      String resourceId,
+      UUID resourceId,
       SamAction action)
       throws InterruptedException {
     String accessToken = userRequest.getToken();
@@ -80,7 +81,9 @@ public class SamService {
       return SamRetry.retry(
           () ->
               resourceApi.resourcePermissionV2(
-                  resourceType.getSamResourceName(), resourceId, action.getSamActionName()));
+                  resourceType.getSamResourceName(),
+                  resourceId.toString(),
+                  action.getSamActionName()));
     } catch (ApiException apiException) {
       throw SamExceptionFactory.create("Error checking resource permission in Sam", apiException);
     }
@@ -98,14 +101,16 @@ public class SamService {
    * @return true if the user has any actions on that resource; false otherwise.
    */
   public boolean hasActions(
-      AuthenticatedUserRequest userRequest, SamResourceType resourceType, String resourceId)
+      AuthenticatedUserRequest userRequest, SamResourceType resourceType, UUID resourceId)
       throws InterruptedException {
     String accessToken = userRequest.getToken();
     ResourcesApi resourceApi = samResourcesApi(accessToken);
     try {
       return SamRetry.retry(
           () ->
-              resourceApi.resourceActions(resourceType.getSamResourceName(), resourceId).size()
+              resourceApi
+                      .resourceActions(resourceType.getSamResourceName(), resourceId.toString())
+                      .size()
                   > 0);
     } catch (ApiException apiException) {
       throw SamExceptionFactory.create("Error checking resource permission in Sam", apiException);
@@ -127,6 +132,16 @@ public class SamService {
     }
   }
 
+  public void createProfileResource(AuthenticatedUserRequest userReq, UUID profileId)
+      throws InterruptedException {
+    // TODO implement
+  }
+
+  public void deleteProfileResource(AuthenticatedUserRequest userReq, UUID profileId)
+      throws InterruptedException {
+    // TODO implement
+  }
+
   @VisibleForTesting
   UsersApi samUsersApi(String accessToken) {
     return new UsersApi(getApiClient(accessToken));
@@ -141,7 +156,7 @@ public class SamService {
     // OkHttpClient objects manage their own thread pools, so it's much more performant to share one
     // across requests.
     ApiClient apiClient =
-        new ApiClient().setHttpClient(commonHttpClient).setBasePath(samConfig.getBasePath());
+        new ApiClient().setHttpClient(commonHttpClient).setBasePath(samConfig.basePath());
     apiClient.setAccessToken(accessToken);
     return apiClient;
   }

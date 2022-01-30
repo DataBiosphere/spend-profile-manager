@@ -39,11 +39,11 @@ public class BaseStatusService {
 
   @PostConstruct
   public void startStatusChecking() {
-    if (configuration.isEnabled()) {
+    if (configuration.enabled()) {
       scheduler.scheduleAtFixedRate(
           this::checkStatus,
-          configuration.getStartupWaitSeconds(),
-          configuration.getPollingIntervalSeconds(),
+          configuration.startupWaitSeconds(),
+          configuration.pollingIntervalSeconds(),
           TimeUnit.SECONDS);
     }
   }
@@ -53,7 +53,7 @@ public class BaseStatusService {
   }
 
   public void checkStatus() {
-    if (configuration.isEnabled()) {
+    if (configuration.enabled()) {
       var newStatus = new ApiSystemStatus();
       try {
         var systems =
@@ -71,12 +71,12 @@ public class BaseStatusService {
   }
 
   public ApiSystemStatus getCurrentStatus() {
-    if (configuration.isEnabled()) {
+    if (configuration.enabled()) {
       // If staleness time (last update + stale threshold) is before the current time, then
       // we are officially not OK.
       if (lastStatusUpdate
           .get()
-          .plusSeconds(configuration.getStalenessThresholdSeconds())
+          .plusSeconds(configuration.stalenessThresholdSeconds())
           .isBefore(Instant.now())) {
         logger.warn("Status has not been updated since {}", lastStatusUpdate);
         cachedStatus.set(new ApiSystemStatus().ok(false));

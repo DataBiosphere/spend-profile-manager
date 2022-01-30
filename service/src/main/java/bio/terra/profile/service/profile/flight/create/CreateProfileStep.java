@@ -14,20 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
-public class CreateProfileStep implements Step {
+record CreateProfileStep(
+    ProfileDao profileDao, ApiCreateProfileRequest profileRequest, AuthenticatedUserRequest user)
+    implements Step {
   private static final Logger logger = LoggerFactory.getLogger(CreateProfileStep.class);
-  private final ProfileDao profileDao;
-  private final ApiCreateProfileRequest profileRequest;
-  private final AuthenticatedUserRequest user;
-
-  public CreateProfileStep(
-      ProfileDao profileDao,
-      ApiCreateProfileRequest profileRequest,
-      AuthenticatedUserRequest user) {
-    this.profileDao = profileDao;
-    this.profileRequest = profileRequest;
-    this.user = user;
-  }
 
   @Override
   public StepResult doStep(FlightContext flightContext)

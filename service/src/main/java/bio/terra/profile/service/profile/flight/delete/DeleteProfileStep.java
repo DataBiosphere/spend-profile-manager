@@ -8,16 +8,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DeleteProfileStep implements Step {
+record DeleteProfileStep(ProfileDao profileDao, UUID profileId) implements Step {
   private static final Logger logger = LoggerFactory.getLogger(DeleteProfileStep.class);
-
-  private final ProfileDao profileDao;
-  private final UUID profileId;
-
-  public DeleteProfileStep(ProfileDao profileDao, UUID profileId) {
-    this.profileDao = profileDao;
-    this.profileId = profileId;
-  }
 
   @Override
   public StepResult doStep(FlightContext context) {

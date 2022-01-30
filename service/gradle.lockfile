@@ -4,8 +4,8 @@
 bio.terra.cloud-resource-lib:azure-resourcemanager-common:0.3.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 bio.terra.cloud-resource-lib:cloud-resource-schema:0.10.0=productionRuntimeClasspath,runtimeClasspath,testRuntimeClasspath
 bio.terra.cloud-resource-lib:common:0.11.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
-bio.terra.cloud-resource-lib:google-billing:0.11.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
-bio.terra.cloud-resource-lib:platform:0.6.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+bio.terra.cloud-resource-lib:google-billing:0.12.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+bio.terra.cloud-resource-lib:platform:0.7.0=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 bio.terra:stairway-gcp:0.0.67-SNAPSHOT=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 bio.terra:stairway:0.0.67-SNAPSHOT=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 bio.terra:terra-common-lib:0.0.53-SNAPSHOT=compileClasspath,productionRuntimeClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath

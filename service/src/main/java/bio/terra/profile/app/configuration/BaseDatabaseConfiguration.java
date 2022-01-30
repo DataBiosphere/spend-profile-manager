@@ -81,8 +81,6 @@ public class BaseDatabaseConfiguration {
     return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
         .append("uri", uri)
         .append("username", username)
-        // .append("password", password) NOTE: password is not printed; that avoids it showing up in
-        // logs
         .toString();
   }
 }

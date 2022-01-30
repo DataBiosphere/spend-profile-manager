@@ -4,6 +4,7 @@ import bio.terra.common.logging.LoggingInitializer;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
       // Scan all service-specific packages beneath the current package
       "bio.terra.profile"
     })
+@ConfigurationPropertiesScan(basePackages = {"bio.terra.profile"})
 @EnableRetry
 @EnableTransactionManagement
 public class Main {

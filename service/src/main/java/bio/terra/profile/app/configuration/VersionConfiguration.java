@@ -5,20 +5,17 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
 /** Read from the version.properties file auto-generated at build time */
 @Configuration
-@PropertySource("classpath:/generated/version.properties")
 @ConfigurationProperties(prefix = "version")
 public class VersionConfiguration implements InitializingBean {
+  private final ConfigurableEnvironment configurableEnvironment;
   private String gitHash;
   private String gitTag;
   private String build;
-
-  private ConfigurableEnvironment configurableEnvironment;
 
   @Autowired
   public VersionConfiguration(ConfigurableEnvironment configurableEnvironment) {
