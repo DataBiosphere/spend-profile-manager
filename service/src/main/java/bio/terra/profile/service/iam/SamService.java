@@ -7,16 +7,21 @@ import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.profile.app.configuration.SamConfiguration;
 import com.google.common.annotations.VisibleForTesting;
 import io.opencensus.contrib.spring.aop.Traced;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
 import org.broadinstitute.dsde.workbench.client.sam.api.ResourcesApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
+import org.broadinstitute.dsde.workbench.client.sam.model.AccessPolicyMembershipV2;
+import org.broadinstitute.dsde.workbench.client.sam.model.CreateResourceRequestV2;
 import org.broadinstitute.dsde.workbench.client.sam.model.UserStatusInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -84,8 +89,8 @@ public class SamService {
                   resourceType.getSamResourceName(),
                   resourceId.toString(),
                   action.getSamActionName()));
-    } catch (ApiException apiException) {
-      throw SamExceptionFactory.create("Error checking resource permission in Sam", apiException);
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error checking resource permission in Sam", e);
     }
   }
 
@@ -112,8 +117,8 @@ public class SamService {
                       .resourceActions(resourceType.getSamResourceName(), resourceId.toString())
                       .size()
                   > 0);
-    } catch (ApiException apiException) {
-      throw SamExceptionFactory.create("Error checking resource permission in Sam", apiException);
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error checking resource permission in Sam", e);
     }
   }
 
@@ -127,19 +132,67 @@ public class SamService {
     UsersApi usersApi = samUsersApi(userToken);
     try {
       return SamRetry.retry(() -> usersApi.getUserStatusInfo());
-    } catch (ApiException apiException) {
-      throw SamExceptionFactory.create("Error getting user email from Sam", apiException);
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error getting user email from Sam", e);
     }
   }
 
-  public void createProfileResource(AuthenticatedUserRequest userReq, UUID profileId)
+  public void createProfileResource(AuthenticatedUserRequest userRequest, UUID profileId)
       throws InterruptedException {
-    // TODO implement
+    ResourcesApi resourcesApi = samResourcesApi(userRequest.getToken());
+
+    Map<String, AccessPolicyMembershipV2> policyMap = new HashMap<>();
+
+    // BPM-configured group has Admin role
+    policyMap.put(
+        SamRole.ADMIN.getSamRoleName(),
+        new AccessPolicyMembershipV2()
+            .addRolesItem(SamRole.ADMIN.getSamRoleName())
+            .addMemberEmailsItem(samConfig.adminsGroupEmail()));
+
+    // Calling user has Owner role
+    policyMap.put(
+        SamRole.OWNER.getSamRoleName(),
+        new AccessPolicyMembershipV2()
+            .addRolesItem(SamRole.OWNER.getSamRoleName())
+            .addMemberEmailsItem(userRequest.getEmail()));
+
+    // Create empty User policy which can be modified later
+    policyMap.put(
+        SamRole.USER.getSamRoleName(),
+        new AccessPolicyMembershipV2().addRolesItem(SamRole.ADMIN.getSamRoleName()));
+
+    CreateResourceRequestV2 profileRequest =
+        new CreateResourceRequestV2().resourceId(profileId.toString()).policies(policyMap);
+
+    try {
+      SamRetry.retry(
+          () ->
+              resourcesApi.createResourceV2(
+                  SamResourceType.PROFILE.getSamResourceName(), profileRequest));
+      logger.info("Created Sam resource for profile {}", profileId);
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error creating a profile resource in Sam", e);
+    }
   }
 
-  public void deleteProfileResource(AuthenticatedUserRequest userReq, UUID profileId)
+  public void deleteProfileResource(AuthenticatedUserRequest userRequest, UUID profileId)
       throws InterruptedException {
-    // TODO implement
+    ResourcesApi resourcesApi = samResourcesApi(userRequest.getToken());
+    try {
+      SamRetry.retry(
+          () ->
+              resourcesApi.deleteResource(
+                  SamResourceType.PROFILE.getSamResourceName(), profileId.toString()));
+      logger.info("Deleted Sam resource for profile {}", profileId);
+    } catch (ApiException e) {
+      logger.info("Sam API error while deleting profile, code is " + e.getCode());
+      // Recover if the resource to delete is not found
+      if (e.getCode() == HttpStatus.NOT_FOUND.value()) {
+        return;
+      }
+      throw SamExceptionFactory.create("Error deleting a profile in Sam", e);
+    }
   }
 
   @VisibleForTesting
