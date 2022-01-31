@@ -25,6 +25,7 @@ public class CreateProfileFlight extends Flight {
     AuthenticatedUserRequest user =
         inputParameters.get(JobMapKeys.AUTH_USER_INFO.getKeyName(), AuthenticatedUserRequest.class);
 
+    addStep(new GetProfileStep(profileDao, request));
     addStep(new CreateProfileStep(profileDao, request, user));
     switch (request.getCloudPlatform()) {
       case GCP:

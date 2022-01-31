@@ -1,11 +1,12 @@
 package bio.terra.profile.app.common;
 
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 public class DaoKeyHolder extends GeneratedKeyHolder {
 
@@ -13,16 +14,10 @@ public class DaoKeyHolder extends GeneratedKeyHolder {
     return getField("id", UUID.class).orElse(null);
   }
 
-  public Timestamp getTimestamp(String fieldName) {
-    return getField(fieldName, Timestamp.class).orElse(null);
-  }
-
   public Instant getCreatedDate() {
-    Timestamp timestamp = getTimestamp("created_date");
-    if (timestamp != null) {
-      return timestamp.toInstant();
-    }
-    return null;
+    return getField("created_date", Timestamp.class)
+            .map(Timestamp::toInstant)
+            .orElse(null);
   }
 
   public String getString(String fieldName) {

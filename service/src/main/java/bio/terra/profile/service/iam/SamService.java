@@ -144,11 +144,12 @@ public class SamService {
     Map<String, AccessPolicyMembershipV2> policyMap = new HashMap<>();
 
     // BPM-configured group has Admin role
-    policyMap.put(
-        SamRole.ADMIN.getSamRoleName(),
-        new AccessPolicyMembershipV2()
-            .addRolesItem(SamRole.ADMIN.getSamRoleName())
-            .addMemberEmailsItem(samConfig.adminsGroupEmail()));
+    // TODO: configure admin group
+//    policyMap.put(
+//        SamRole.ADMIN.getSamRoleName(),
+//        new AccessPolicyMembershipV2()
+//            .addRolesItem(SamRole.ADMIN.getSamRoleName())
+//            .addMemberEmailsItem(samConfig.adminsGroupEmail()));
 
     // Calling user has Owner role
     policyMap.put(
@@ -160,7 +161,7 @@ public class SamService {
     // Create empty User policy which can be modified later
     policyMap.put(
         SamRole.USER.getSamRoleName(),
-        new AccessPolicyMembershipV2().addRolesItem(SamRole.ADMIN.getSamRoleName()));
+        new AccessPolicyMembershipV2().addRolesItem(SamRole.USER.getSamRoleName()));
 
     CreateResourceRequestV2 profileRequest =
         new CreateResourceRequestV2().resourceId(profileId.toString()).policies(policyMap);

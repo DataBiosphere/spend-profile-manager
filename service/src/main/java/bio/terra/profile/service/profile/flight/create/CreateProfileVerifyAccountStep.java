@@ -43,11 +43,9 @@ record CreateProfileVerifyAccountStep(
     if (actualPermissions == null || !actualPermissions.equals(permissionsToTest)) {
       var message =
           String.format(
-              "The user '%s' needs access to the billing account '%s' to perform the requested operation",
+              "The user [%s] needs access to the billing account [%s] to perform the requested operation",
               user.getEmail(), request.getId());
-      logger.info(message);
-      return new StepResult(
-          StepStatus.STEP_RESULT_FAILURE_FATAL, new InaccessibleBillingAccountException(message));
+      throw new InaccessibleBillingAccountException(message);
     }
 
     return StepResult.getStepResultSuccess();

@@ -46,7 +46,11 @@ public class ProfileService {
   public String createProfile(
       ApiCreateProfileRequest billingProfileRequest, AuthenticatedUserRequest user) {
     String description =
-        String.format("Create billing profile '%s'", billingProfileRequest.getDisplayName());
+        String.format("Create billing profile id [%s] on cloud platform [%s]",
+                billingProfileRequest.getId(),
+                billingProfileRequest.getCloudPlatform()
+    );
+    logger.info(description);
     return jobService
         .newJob()
         .description(description)
@@ -99,7 +103,8 @@ public class ProfileService {
         "verifyAuthorization");
     var billingProfile = profileDao.getBillingProfileById(id);
     var platform = billingProfile.getCloudPlatform();
-    var description = String.format("Delete billing profile id '%s'", id);
+    var description = String.format("Delete billing profile id [%s] on cloud platform [%s]", id, platform);
+    logger.info(description);
     var deleteJob =
         jobService
             .newJob()
@@ -138,13 +143,16 @@ public class ProfileService {
    * @throws ProfileNotFoundException when the profile is not found
    */
   public ApiProfileModel getProfile(UUID id, AuthenticatedUserRequest user) {
+    // Throws 404 if not found
+    var profile = profileDao.getBillingProfileById(id);
+    // If profile was found, check permissions
     var hasActions =
         SamRethrow.onInterrupted(
             () -> samService.hasActions(user, SamResourceType.PROFILE, id), "hasActions");
     if (!hasActions) {
       throw new UnauthorizedException("unauthorized");
     }
-    return profileDao.getBillingProfileById(id);
+    return profile;
   }
 
   //  /**
