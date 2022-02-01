@@ -1,5 +1,7 @@
 package bio.terra.profile.db;
 
+import bio.terra.common.db.ReadTransaction;
+import bio.terra.common.db.WriteTransaction;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.service.profile.exception.ProfileInUseException;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
@@ -7,6 +9,9 @@ import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.profile.service.profile.model.CloudPlatform;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +21,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class ProfileDao {
@@ -36,20 +38,15 @@ public class ProfileDao {
       "SELECT "
           + SQL_SELECT_LIST
           + " FROM billing_profile"
-          + " WHERE id in (:idlist)"
+          + " WHERE id in (:profile_ids)"
           + " OFFSET :offset LIMIT :limit";
-
-  private static final String SQL_TOTAL =
-      "SELECT count(id) AS total" + " FROM billing_profile" + " WHERE id in (:idlist)";
-
-  private static final String SQL_LIST_ALL = "SELECT " + SQL_SELECT_LIST + " FROM billing_profile";
 
   @Autowired
   public ProfileDao(NamedParameterJdbcTemplate jdbcTemplate) {
     this.jdbcTemplate = jdbcTemplate;
   }
 
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
+  @WriteTransaction
   public BillingProfile createBillingProfile(
       BillingProfile profile, AuthenticatedUserRequest user) {
     String sql =
@@ -97,63 +94,23 @@ public class ProfileDao {
         keyHolder.getString("created_by"));
   }
 
-  //  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
-  //  public ApiProfileModel updateBillingProfileById(ApiUpdateProfileRequest profileRequest) {
-  //    String sql =
-  //        "UPDATE billing_profile "
-  //            + "SET billing_account_id = :billing_account_id, description = :description "
-  //            + "WHERE id = :id";
-  //    MapSqlParameterSource params =
-  //        new MapSqlParameterSource()
-  //            .addValue("id", profileRequest.getId())
-  //            .addValue("billing_account_id", profileRequest.getBillingAccountId())
-  //            .addValue("description", profileRequest.getDescription());
-  //    DaoKeyHolder keyHolder = new DaoKeyHolder();
-  //    int updated = jdbcTemplate.update(sql, params, keyHolder);
-  //
-  //    // Assume if the following two conditions are true, then the profile could not be found
-  //    // 1. the db command successfully completed
-  //    // 2. no rows were updated
-  //    if (updated != 1) {
-  //      throw new ProfileNotFoundException("Billing Profile was not updated.");
-  //    }
-  //
-  //    return new ApiProfileModel()
-  //        .id(keyHolder.getId())
-  //        .displayName(keyHolder.getString("name"))
-  //        .biller(keyHolder.getString("biller"))
-  //        .billingAccountId(keyHolder.getString("billing_account_id"))
-  //        .description(keyHolder.getString("description"))
-  //        .cloudPlatform(ApiCloudPlatform.valueOf(keyHolder.getString("cloud_platform")))
-  //        .tenantId(keyHolder.getField("tenant_id", UUID.class).orElse(null))
-  //        .subscriptionId(keyHolder.getField("subscription_id", UUID.class).orElse(null))
-  //        .resourceGroupName(keyHolder.getString("resource_group_name"))
-  //        .applicationDeploymentName(keyHolder.getString("application_deployment_name"))
-  //        .createdBy(keyHolder.getString("created_by"))
-  //        .createdDate(keyHolder.getCreatedDate().toString());
-  //  }
+  @ReadTransaction
+  public List<BillingProfile> listBillingProfiles(int offset, int limit, Collection<UUID> idList) {
 
-  //  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  //  public ApiProfileModelList listBillingProfiles(
-  //      int offset, int limit, Collection<UUID> accessibleProfileId) {
-  //
-  //    MapSqlParameterSource params =
-  //        new MapSqlParameterSource()
-  //            .addValue("offset", offset)
-  //            .addValue("limit", limit)
-  //            .addValue("idlist", accessibleProfileId);
-  //
-  //    List<ApiProfileModel> profiles =
-  //        jdbcTemplate.query(SQL_LIST, params, new BillingProfileMapper());
-  //    Integer total = jdbcTemplate.queryForObject(SQL_TOTAL, params, Integer.class);
-  //    if (total == null) {
-  //      throw new CorruptMetadataException("Impossible null value from count");
-  //    }
-  //
-  //    return new ApiProfileModelList().items(profiles).total(total);
-  //  }
+    // If the incoming list is empty, the caller does not have permission to see any
+    // workspaces, so we return an empty list.
+    if (idList.isEmpty()) {
+      return Collections.emptyList();
+    }
+    var params =
+        new MapSqlParameterSource()
+            .addValue("profile_ids", idList)
+            .addValue("offset", offset)
+            .addValue("limit", limit);
+    return jdbcTemplate.query(SQL_LIST, params, new BillingProfileMapper());
+  }
 
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @ReadTransaction
   public BillingProfile getBillingProfileById(UUID id) {
     try {
       MapSqlParameterSource params = new MapSqlParameterSource().addValue("id", id);
@@ -163,7 +120,7 @@ public class ProfileDao {
     }
   }
 
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
+  @WriteTransaction
   public boolean deleteBillingProfileById(UUID id) {
     try {
       int rowsAffected =
@@ -177,17 +134,6 @@ public class ProfileDao {
       throw new ProfileInUseException("Profile is in use and cannot be deleted", ex);
     }
   }
-
-  /**
-   * This method is made for use by upgrade, where we need to find all of the old billing profiles
-   * without regard to visibility.
-   *
-   * @return list of billing profile models
-   */
-  //  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  //  public List<ApiProfileModel> getOldBillingProfiles() {
-  //    return jdbcTemplate.query(SQL_LIST_ALL, new BillingProfileMapper());
-  //  }
 
   private static class BillingProfileMapper implements RowMapper<BillingProfile> {
     public BillingProfile mapRow(ResultSet rs, int rowNum) throws SQLException {

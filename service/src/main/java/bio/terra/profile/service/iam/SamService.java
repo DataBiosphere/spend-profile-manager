@@ -11,8 +11,11 @@ import bio.terra.profile.service.iam.model.SamRole;
 import com.google.common.annotations.VisibleForTesting;
 import io.opencensus.contrib.spring.aop.Traced;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import okhttp3.OkHttpClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiClient;
 import org.broadinstitute.dsde.workbench.client.sam.ApiException;
@@ -20,6 +23,7 @@ import org.broadinstitute.dsde.workbench.client.sam.api.ResourcesApi;
 import org.broadinstitute.dsde.workbench.client.sam.api.UsersApi;
 import org.broadinstitute.dsde.workbench.client.sam.model.AccessPolicyMembershipV2;
 import org.broadinstitute.dsde.workbench.client.sam.model.CreateResourceRequestV2;
+import org.broadinstitute.dsde.workbench.client.sam.model.ResourceAndAccessPolicy;
 import org.broadinstitute.dsde.workbench.client.sam.model.UserStatusInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,6 +126,40 @@ public class SamService {
                   > 0);
     } catch (ApiException e) {
       throw SamExceptionFactory.create("Error checking resource permission in Sam", e);
+    }
+  }
+
+  /**
+   * List all profile IDs in Sam this user has access to.
+   *
+   * @param userRequest authenticated user
+   * @return list of profiles
+   * @throws InterruptedException
+   */
+  @Traced
+  public List<UUID> listProfileIds(AuthenticatedUserRequest userRequest)
+      throws InterruptedException {
+    ResourcesApi resourceApi = samResourcesApi(userRequest.getToken());
+    try {
+      List<ResourceAndAccessPolicy> resourceAndPolicies =
+          SamRetry.retry(
+              () ->
+                  resourceApi.listResourcesAndPolicies(
+                      SamResourceType.PROFILE.getSamResourceName()));
+      return resourceAndPolicies.stream()
+          .flatMap(
+              p -> {
+                // BPM always uses UUIDs for profile IDs, but this is not enforced in Sam.
+                // Ignore any profiles with a non-UUID id.
+                try {
+                  return Stream.of(UUID.fromString(p.getResourceId()));
+                } catch (IllegalArgumentException e) {
+                  return Stream.empty();
+                }
+              })
+          .collect(Collectors.toList());
+    } catch (ApiException e) {
+      throw SamExceptionFactory.create("Error listing profile ids in Sam", e);
     }
   }
 
