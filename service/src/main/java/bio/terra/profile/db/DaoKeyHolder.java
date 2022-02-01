@@ -1,23 +1,14 @@
-package bio.terra.profile.app.common;
-
-import org.springframework.jdbc.support.GeneratedKeyHolder;
+package bio.terra.profile.db;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 public class DaoKeyHolder extends GeneratedKeyHolder {
-
-  public UUID getId() {
-    return getField("id", UUID.class).orElse(null);
-  }
-
   public Instant getCreatedDate() {
-    return getField("created_date", Timestamp.class)
-            .map(Timestamp::toInstant)
-            .orElse(null);
+    return getField("created_date", Timestamp.class).map(Timestamp::toInstant).orElse(null);
   }
 
   public String getString(String fieldName) {

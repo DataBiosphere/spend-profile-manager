@@ -7,6 +7,7 @@ import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import java.util.UUID;
 
+/** Step to delete a billing profile resource in Sam. */
 record DeleteProfileAuthzIamStep(
     SamService samService, UUID profileId, AuthenticatedUserRequest user) implements Step {
 

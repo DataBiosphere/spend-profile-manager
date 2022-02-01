@@ -1,9 +1,9 @@
 package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.generated.model.ApiCreateProfileRequest;
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.profile.exception.InaccessibleBillingAccountException;
+import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
@@ -12,14 +12,10 @@ import com.google.cloud.billing.v1.BillingAccountName;
 import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+/** Step to verify the user has access to a GCP profile's billing account. */
 record CreateProfileVerifyAccountStep(
-    CrlService crlService, ApiCreateProfileRequest request, AuthenticatedUserRequest user)
-    implements Step {
-  private static final Logger logger =
-      LoggerFactory.getLogger(CreateProfileVerifyAccountStep.class);
+    CrlService crlService, BillingProfile profile, AuthenticatedUserRequest user) implements Step {
 
   @Override
   public StepResult doStep(FlightContext context) throws InterruptedException {
@@ -28,7 +24,7 @@ record CreateProfileVerifyAccountStep(
     var permissionsToTest = List.of("billing.resourceAssociations.create");
     var testPermissionsRequest =
         TestIamPermissionsRequest.newBuilder()
-            .setResource(BillingAccountName.of(request.getBillingAccountId()).toString())
+            .setResource(BillingAccountName.of(profile.billingAccountId().get()).toString())
             .addAllPermissions(permissionsToTest)
             .build();
 
@@ -44,7 +40,7 @@ record CreateProfileVerifyAccountStep(
       var message =
           String.format(
               "The user [%s] needs access to the billing account [%s] to perform the requested operation",
-              user.getEmail(), request.getId());
+              user.getEmail(), profile.id());
       throw new InaccessibleBillingAccountException(message);
     }
 

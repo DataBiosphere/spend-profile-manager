@@ -9,6 +9,8 @@ import bio.terra.profile.generated.model.ApiJobReport;
 import bio.terra.profile.generated.model.ApiProfileModel;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.ProfileService;
+import bio.terra.profile.service.profile.model.BillingProfile;
+import java.util.Optional;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 public class ProfileApiController implements ProfileApi {
-
   private final HttpServletRequest request;
   private final ProfileService profileService;
   private final AuthenticatedUserRequestFactory authenticatedUserRequestFactory;
@@ -42,7 +43,8 @@ public class ProfileApiController implements ProfileApi {
   public ResponseEntity<ApiCreateProfileResult> createProfile(
       @RequestBody ApiCreateProfileRequest body) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    String jobId = profileService.createProfile(body, user);
+    BillingProfile profile = BillingProfile.fromApiCreateProfileRequest(body);
+    String jobId = profileService.createProfile(profile, user);
     final ApiCreateProfileResult result = fetchCreateProfileResult(jobId, user);
     return new ResponseEntity<>(result, getAsyncResponseCode(result.getJobReport()));
   }
@@ -58,8 +60,8 @@ public class ProfileApiController implements ProfileApi {
   @Override
   public ResponseEntity<ApiProfileModel> getProfile(@PathVariable("profileId") UUID profileId) {
     AuthenticatedUserRequest user = authenticatedUserRequestFactory.from(request);
-    ApiProfileModel profile = profileService.getProfile(profileId, user);
-    return new ResponseEntity<>(profile, HttpStatus.OK);
+    BillingProfile profile = profileService.getProfile(profileId, user);
+    return new ResponseEntity<>(profile.toApiProfileModel(), HttpStatus.OK);
   }
 
   @Override
@@ -131,12 +133,15 @@ public class ProfileApiController implements ProfileApi {
 
   private ApiCreateProfileResult fetchCreateProfileResult(
       String jobId, AuthenticatedUserRequest userRequest) {
-    final JobService.AsyncJobResult<ApiProfileModel> jobResult =
-        jobService.retrieveAsyncJobResult(jobId, ApiProfileModel.class, userRequest);
+    final JobService.AsyncJobResult<BillingProfile> jobResult =
+        jobService.retrieveAsyncJobResult(jobId, BillingProfile.class, userRequest);
     return new ApiCreateProfileResult()
         .jobReport(jobResult.getJobReport())
         .errorReport(jobResult.getApiErrorReport())
-        .profileDescription(jobResult.getResult());
+        .profileDescription(
+            Optional.ofNullable(jobResult.getResult())
+                .map(BillingProfile::toApiProfileModel)
+                .orElse(null));
   }
 
   private static HttpStatus getAsyncResponseCode(ApiJobReport jobReport) {

@@ -5,6 +5,9 @@ import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.common.sam.SamRetry;
 import bio.terra.common.sam.exception.SamExceptionFactory;
 import bio.terra.profile.app.configuration.SamConfiguration;
+import bio.terra.profile.service.iam.model.SamAction;
+import bio.terra.profile.service.iam.model.SamResourceType;
+import bio.terra.profile.service.iam.model.SamRole;
 import com.google.common.annotations.VisibleForTesting;
 import io.opencensus.contrib.spring.aop.Traced;
 import java.util.HashMap;
@@ -137,6 +140,13 @@ public class SamService {
     }
   }
 
+  /**
+   * Creates a profile resource in Sam.
+   *
+   * @param userRequest authenticated user
+   * @param profileId id of the profile to create
+   * @throws InterruptedException
+   */
   public void createProfileResource(AuthenticatedUserRequest userRequest, UUID profileId)
       throws InterruptedException {
     ResourcesApi resourcesApi = samResourcesApi(userRequest.getToken());
@@ -145,11 +155,11 @@ public class SamService {
 
     // BPM-configured group has Admin role
     // TODO: configure admin group
-//    policyMap.put(
-//        SamRole.ADMIN.getSamRoleName(),
-//        new AccessPolicyMembershipV2()
-//            .addRolesItem(SamRole.ADMIN.getSamRoleName())
-//            .addMemberEmailsItem(samConfig.adminsGroupEmail()));
+    //    policyMap.put(
+    //        SamRole.ADMIN.getSamRoleName(),
+    //        new AccessPolicyMembershipV2()
+    //            .addRolesItem(SamRole.ADMIN.getSamRoleName())
+    //            .addMemberEmailsItem(samConfig.adminsGroupEmail()));
 
     // Calling user has Owner role
     policyMap.put(
@@ -177,6 +187,13 @@ public class SamService {
     }
   }
 
+  /**
+   * Deletes a profile resource from Sam.
+   *
+   * @param userRequest authenticated user
+   * @param profileId profile ID to delete
+   * @throws InterruptedException
+   */
   public void deleteProfileResource(AuthenticatedUserRequest userRequest, UUID profileId)
       throws InterruptedException {
     ResourcesApi resourcesApi = samResourcesApi(userRequest.getToken());

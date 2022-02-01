@@ -12,7 +12,6 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class UnauthenticatedApiController implements UnauthenticatedApi {
-
   private final ProfileStatusService statusService;
   private final ApiSystemVersion currentVersion;
 
@@ -26,7 +25,7 @@ public class UnauthenticatedApiController implements UnauthenticatedApi {
             .gitTag(versionConfiguration.getGitTag())
             .gitHash(versionConfiguration.getGitHash())
             .github(
-                "https://github.com/DataBiosphere/spend-profile-manager/commit/"
+                "https://github.com/DataBiosphere/terra-billing-profile-manager/commit/"
                     + versionConfiguration.getGitHash())
             .build(versionConfiguration.getBuild());
   }

@@ -3,18 +3,17 @@ package bio.terra.profile.service.profile;
 import bio.terra.common.exception.UnauthorizedException;
 import bio.terra.common.iam.AuthenticatedUserRequest;
 import bio.terra.profile.db.ProfileDao;
-import bio.terra.profile.generated.model.ApiCreateProfileRequest;
-import bio.terra.profile.generated.model.ApiProfileModel;
-import bio.terra.profile.service.iam.SamAction;
-import bio.terra.profile.service.iam.SamResourceType;
 import bio.terra.profile.service.iam.SamRethrow;
 import bio.terra.profile.service.iam.SamService;
+import bio.terra.profile.service.iam.model.SamAction;
+import bio.terra.profile.service.iam.model.SamResourceType;
 import bio.terra.profile.service.job.JobMapKeys;
 import bio.terra.profile.service.job.JobService;
 import bio.terra.profile.service.profile.exception.ProfileNotFoundException;
 import bio.terra.profile.service.profile.flight.ProfileMapKeys;
 import bio.terra.profile.service.profile.flight.create.CreateProfileFlight;
 import bio.terra.profile.service.profile.flight.delete.DeleteProfileFlight;
+import bio.terra.profile.service.profile.model.BillingProfile;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,23 +38,21 @@ public class ProfileService {
   /**
    * Create a new billing profile.
    *
-   * @param billingProfileRequest request to create a billing profile
+   * @param profile billing profile to be created
    * @param user authenticated user
    * @return jobId of the submitted Stairway job
    */
-  public String createProfile(
-      ApiCreateProfileRequest billingProfileRequest, AuthenticatedUserRequest user) {
+  public String createProfile(BillingProfile profile, AuthenticatedUserRequest user) {
     String description =
-        String.format("Create billing profile id [%s] on cloud platform [%s]",
-                billingProfileRequest.getId(),
-                billingProfileRequest.getCloudPlatform()
-    );
+        String.format(
+            "Create billing profile id [%s] on cloud platform [%s]",
+            profile.id(), profile.cloudPlatform());
     logger.info(description);
     return jobService
         .newJob()
         .description(description)
         .flightClass(CreateProfileFlight.class)
-        .request(billingProfileRequest)
+        .request(profile)
         .userRequest(user)
         .submit();
   }
@@ -102,8 +99,9 @@ public class ProfileService {
         () -> samService.verifyAuthorization(user, SamResourceType.PROFILE, id, SamAction.DELETE),
         "verifyAuthorization");
     var billingProfile = profileDao.getBillingProfileById(id);
-    var platform = billingProfile.getCloudPlatform();
-    var description = String.format("Delete billing profile id [%s] on cloud platform [%s]", id, platform);
+    var platform = billingProfile.cloudPlatform();
+    var description =
+        String.format("Delete billing profile id [%s] on cloud platform [%s]", id, platform);
     logger.info(description);
     var deleteJob =
         jobService
@@ -142,7 +140,7 @@ public class ProfileService {
    * @return billing profile model
    * @throws ProfileNotFoundException when the profile is not found
    */
-  public ApiProfileModel getProfile(UUID id, AuthenticatedUserRequest user) {
+  public BillingProfile getProfile(UUID id, AuthenticatedUserRequest user) {
     // Throws 404 if not found
     var profile = profileDao.getBillingProfileById(id);
     // If profile was found, check permissions

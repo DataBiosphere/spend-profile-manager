@@ -5,12 +5,9 @@ import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+/** Step to delete a billing profile from the database. */
 record DeleteProfileStep(ProfileDao profileDao, UUID profileId) implements Step {
-  private static final Logger logger = LoggerFactory.getLogger(DeleteProfileStep.class);
-
   @Override
   public StepResult doStep(FlightContext context) {
     profileDao.deleteBillingProfileById(profileId);

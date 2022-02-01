@@ -31,7 +31,7 @@ public class CrlService {
     try {
       this.crlBillingClientCow = new CloudBillingClientCow(clientConfig, creds);
     } catch (IOException e) {
-      throw new CrlInternalException("Error creating resource manager wrapper", e);
+      throw new CrlInternalException("Error creating billing client wrapper", e);
     }
   }
 

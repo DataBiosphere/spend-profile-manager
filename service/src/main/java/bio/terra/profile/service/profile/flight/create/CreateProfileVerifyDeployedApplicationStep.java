@@ -1,9 +1,9 @@
 package bio.terra.profile.service.profile.flight.create;
 
 import bio.terra.common.iam.AuthenticatedUserRequest;
-import bio.terra.profile.generated.model.ApiCreateProfileRequest;
 import bio.terra.profile.service.crl.CrlService;
 import bio.terra.profile.service.profile.exception.InaccessibleApplicationDeploymentException;
+import bio.terra.profile.service.profile.model.BillingProfile;
 import bio.terra.stairway.FlightContext;
 import bio.terra.stairway.Step;
 import bio.terra.stairway.StepResult;
@@ -11,9 +11,9 @@ import bio.terra.stairway.StepStatus;
 import java.util.Map;
 import java.util.UUID;
 
+/** Step to verify the user has access to an Azure profile's managed resource group. */
 record CreateProfileVerifyDeployedApplicationStep(
-    CrlService crlService, ApiCreateProfileRequest request, AuthenticatedUserRequest user)
-    implements Step {
+    CrlService crlService, BillingProfile profile, AuthenticatedUserRequest user) implements Step {
 
   private static final String DEPLOYED_APPLICATION_RESOURCE_ID =
       "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Solutions/applications/%s";
@@ -22,14 +22,14 @@ record CreateProfileVerifyDeployedApplicationStep(
   public StepResult doStep(FlightContext context) {
     final String applicationResourceId =
         getApplicationDeploymentId(
-            request.getSubscriptionId(),
-            request.getResourceGroupName(),
-            request.getApplicationDeploymentName());
+            profile.subscriptionId().get(),
+            profile.resourceGroupName().get(),
+            profile.applicationDeploymentName().get());
 
     final boolean canAccess;
     try {
       var resourceManager =
-          crlService.getResourceManager(request.getTenantId(), request.getSubscriptionId());
+          crlService.getResourceManager(profile.tenantId().get(), profile.subscriptionId().get());
       var applicationDeployment = resourceManager.genericResources().getById(applicationResourceId);
       var properties =
           (Map<String, Map<String, Map<String, String>>>) applicationDeployment.properties();

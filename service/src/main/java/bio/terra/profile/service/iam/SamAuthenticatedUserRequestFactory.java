@@ -8,6 +8,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * An {@link AuthenticatedUserRequestFactory} which always resolves the user email and subjectId
+ * from Sam given a request token.
+ *
+ * <p>This is important for calls made by pet service accounts, which will have a pet email in the
+ * request header, but Sam will return the owner's email.
+ */
 @Component
 public class SamAuthenticatedUserRequestFactory implements AuthenticatedUserRequestFactory {
   private static final String OAUTH2_ACCESS_TOKEN = "OAUTH2_CLAIM_access_token";
@@ -23,9 +30,7 @@ public class SamAuthenticatedUserRequestFactory implements AuthenticatedUserRequ
   public AuthenticatedUserRequest from(HttpServletRequest servletRequest) {
     final var token = getRequiredToken(servletRequest);
 
-    // Always fetch the user email and subject ID from Sam.
-    // This is important for calls made by pet service accounts, which will have a pet email
-    // in the request header, but Sam will return the owner's email.
+    // Fetch the user status from Sam
     var userStatusInfo =
         SamRethrow.onInterrupted(() -> samService.getUserStatusInfo(token), "getUserStatusInfo");
 

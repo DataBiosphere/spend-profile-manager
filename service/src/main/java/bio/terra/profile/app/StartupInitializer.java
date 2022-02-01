@@ -28,6 +28,5 @@ public final class StartupInitializer {
     // TODO: Fill in this method with any other initialization that needs to happen
     //  between the point of having the entire application initialized and
     //  the point of opening the port to start accepting REST requests.
-
   }
 }
